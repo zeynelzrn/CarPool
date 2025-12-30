@@ -7,6 +7,8 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const rideRoutes = require('./routes/rideRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
+const ratingRoutes = require('./routes/ratingRoutes');
+const messageRoutes = require('./routes/messageRoutes');
 
 // MongoDB bağlantısı
 connectDB();
@@ -22,6 +24,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/rides', rideRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/ratings', ratingRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Ana route
 app.get('/', (req, res) => {

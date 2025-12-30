@@ -33,4 +33,14 @@ export const authService = {
     const response = await api.get('/auth/me');
     return response.data;
   },
+
+  updateProfile: async (profileData) => {
+    const response = await api.put('/auth/profile', profileData);
+    return response.data;
+  },
+
+  getUserById: async (userId) => {
+    const response = await api.get(`/auth/user/${userId}`);
+    return response.data;
+  },
 };

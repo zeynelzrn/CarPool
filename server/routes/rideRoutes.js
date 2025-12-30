@@ -6,7 +6,8 @@ const {
   getRideById,
   getMyRides,
   updateRide,
-  deleteRide
+  deleteRide,
+  completeRide
 } = require('../controllers/rideController');
 const { protect, authorizeDriver } = require('../middleware/auth');
 
@@ -15,6 +16,8 @@ router.route('/')
   .post(protect, authorizeDriver, createRide);
 
 router.get('/my-rides', protect, authorizeDriver, getMyRides);
+
+router.patch('/:id/complete', protect, authorizeDriver, completeRide);
 
 router.route('/:id')
   .get(getRideById)

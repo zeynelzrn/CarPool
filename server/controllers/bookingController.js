@@ -54,14 +54,18 @@ const getMyBookings = async (req, res) => {
         path: 'ride',
         populate: {
           path: 'driver',
-          select: 'username email'
+          select: 'username email profilePicture'
         }
       })
       .sort({ createdAt: -1 });
 
-    res.json(bookings);
+    // Silinmiş ride'ları filtrele
+    const validBookings = bookings.filter(booking => booking.ride !== null);
+    
+    res.json(validBookings);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Rezervasyonlar yüklenirken hata:', error);
+    res.status(500).json({ message: error.message || 'Rezervasyonlar yüklenemedi' });
   }
 };
 

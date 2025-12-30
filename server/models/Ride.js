@@ -57,6 +57,25 @@ const rideSchema = new mongoose.Schema({
     type: String,
     enum: ['active', 'completed', 'cancelled'],
     default: 'active'
+  },
+  carInfo: {
+    brand: {
+      type: String,
+      trim: true
+    },
+    model: {
+      type: String,
+      trim: true
+    },
+    year: {
+      type: Number,
+      min: [1900, 'Geçerli bir yıl giriniz'],
+      max: [new Date().getFullYear() + 1, 'Gelecek yıl olamaz']
+    },
+    color: {
+      type: String,
+      trim: true
+    }
   }
 }, {
   timestamps: true

@@ -9,6 +9,8 @@ import RideDetail from './pages/RideDetail';
 import CreateRide from './pages/CreateRide';
 import MyRides from './pages/MyRides';
 import MyBookings from './pages/MyBookings';
+import Profile from './pages/Profile';
+import EditProfile from './pages/EditProfile';
 
 const ProtectedRoute = ({ children, requireDriver, requirePassenger }) => {
   const { isAuthenticated, isDriver, isPassenger, loading } = useAuth();
@@ -42,6 +44,15 @@ function AppContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/rides" element={<RideList />} />
         <Route path="/rides/:id" element={<RideDetail />} />
+        <Route path="/profile/:userId" element={<Profile />} />
+        <Route
+          path="/edit-profile"
+          element={
+            <ProtectedRoute>
+              <EditProfile />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/create-ride"

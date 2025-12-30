@@ -35,4 +35,9 @@ export const rideService = {
     const response = await api.delete(`/rides/${id}`);
     return response.data;
   },
+
+  completeRide: async (id) => {
+    const response = await api.patch(`/rides/${id}/complete`);
+    return response.data;
+  },
 };

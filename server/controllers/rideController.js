@@ -137,11 +137,42 @@ const deleteRide = async (req, res) => {
   }
 };
 
+// @desc    Yolculuğu tamamlandı olarak işaretle
+// @route   PATCH /api/rides/:id/complete
+// @access  Private (Driver only - own rides)
+const completeRide = async (req, res) => {
+  try {
+    const ride = await Ride.findById(req.params.id);
+
+    if (!ride) {
+      return res.status(404).json({ message: 'Yolculuk ilanı bulunamadı' });
+    }
+
+    // Sadece ilan sahibi tamamlayabilir
+    if (ride.driver.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Bu yolculuğu tamamlama yetkiniz yok' });
+    }
+
+    // Sadece active olan yolculuklar tamamlanabilir
+    if (ride.status !== 'active') {
+      return res.status(400).json({ message: 'Bu yolculuk zaten tamamlanmış veya iptal edilmiş' });
+    }
+
+    ride.status = 'completed';
+    await ride.save();
+
+    res.json({ message: 'Yolculuk tamamlandı olarak işaretlendi', ride });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createRide,
   getRides,
   getRideById,
   getMyRides,
   updateRide,
-  deleteRide
+  deleteRide,
+  completeRide
 };
