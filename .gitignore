@@ -1,0 +1,15 @@
+# Bağımlılıklar (Bunlar çok yer kaplar, yüklenmez)
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Çevresel Değişkenler (ŞİFRELER BURADA, ASLA YÜKLENMEZ)
+.env
+.env.local
+
+# İşletim sistemi dosyaları
+.DS_Store
+
+# Build dosyaları
+dist/
+build/
