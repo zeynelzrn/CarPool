@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ratingService } from '../services/ratingService';
+import { StarIcon, XIcon } from './Icons'; // İkonları buradan çekiyoruz
 
 const RatingModal = ({ isOpen, onClose, ride, toUser, role, onSuccess }) => {
   const [rating, setRating] = useState(5);
@@ -34,86 +35,109 @@ const RatingModal = ({ isOpen, onClose, ride, toUser, role, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-2xl font-bold text-gray-900">Değerlendirme Yap</h3>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 transform transition-all scale-100 border border-gray-100">
+        
+        {/* Header */}
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">Değerlendirme Yap</h3>
+            <p className="text-sm text-gray-500 mt-1">Yolculuğun nasıldı?</p>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
+            className="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-all"
           >
-            ×
+            <XIcon className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="mb-4">
-          <p className="text-gray-600 mb-2">
-            <span className="font-semibold">{toUser.username}</span> için değerlendirme
+        {/* Info Box */}
+        <div className="bg-emerald-50 p-4 rounded-2xl mb-6 border border-emerald-100">
+          <p className="text-emerald-900 text-sm mb-1">
+            <span className="font-bold">{toUser.username}</span> kullanıcısını puanlıyorsunuz.
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
             {ride.origin} → {ride.destination}
           </p>
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl mb-4 text-sm font-medium flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Puan
+          
+          {/* Yıldızlar */}
+          <div className="mb-6 text-center">
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+              Puanın
             </label>
-            <div className="flex gap-2">
+            <div className="flex justify-center gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
                   type="button"
                   onClick={() => setRating(star)}
-                  className={`text-3xl transition ${
+                  className={`text-4xl transition-all duration-200 transform hover:scale-110 focus:outline-none ${
                     star <= rating
-                      ? 'text-yellow-400'
-                      : 'text-gray-300'
-                  } hover:scale-110`}
+                      ? 'text-yellow-400 drop-shadow-sm'
+                      : 'text-gray-200 hover:text-gray-300'
+                  }`}
                 >
                   ★
                 </button>
               ))}
             </div>
-            <p className="text-sm text-gray-500 mt-1">{rating} / 5</p>
+            <p className="text-sm font-bold text-[#004225] mt-2">{rating} / 5</p>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Yorum (İsteğe bağlı)
+          {/* Yorum Alanı */}
+          <div className="mb-6">
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              Yorumun (İsteğe bağlı)
             </label>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows="4"
               maxLength={500}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Yolculuk hakkında görüşlerinizi paylaşın..."
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all resize-none text-sm"
+              placeholder="Deneyimlerini diğer kullanıcılarla paylaş..."
             />
-            <p className="text-xs text-gray-500 mt-1">{comment.length} / 500</p>
+            <div className="flex justify-end mt-1">
+               <p className="text-xs text-gray-400">{comment.length} / 500</p>
+            </div>
           </div>
 
-          <div className="flex gap-2">
+          {/* Butonlar */}
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition"
+              className="flex-1 bg-white border border-gray-200 text-gray-600 py-3 px-4 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all font-bold text-sm"
             >
-              İptal
+              Vazgeç
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition disabled:bg-blue-300"
+              className="flex-1 bg-[#004225] text-white py-3 px-4 rounded-xl hover:bg-[#00331b] hover:shadow-lg transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed font-bold text-sm flex justify-center items-center gap-2"
             >
-              {loading ? 'Gönderiliyor...' : 'Gönder'}
+              {loading ? (
+                 <>
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Gönderiliyor...</span>
+                 </>
+              ) : (
+                 'Değerlendir'
+              )}
             </button>
           </div>
         </form>
@@ -123,4 +147,3 @@ const RatingModal = ({ isOpen, onClose, ride, toUser, role, onSuccess }) => {
 };
 
 export default RatingModal;
-

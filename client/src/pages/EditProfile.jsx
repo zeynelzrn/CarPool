@@ -1,59 +1,84 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/authService';
+import { authService } from '../services/authService'; // authService içinde getProfile veya me fonksiyonu olmalı
 import { UserIcon } from '../components/Icons';
 
 const EditProfile = () => {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     username: '',
     phone: '',
     bio: '',
-    profilePicture: '',
+    // profilePicture'ı burada tutmuyoruz, sadece preview ve file olarak yöneteceğiz
   });
+  
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true); // Sayfa yükleniyor durumu
   const [imagePreview, setImagePreview] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null); // Yeni seçilen dosya
 
+  // 1. Sayfa Açılışında En Güncel Veriyi Çek
   useEffect(() => {
-    if (user) {
-      setFormData({
-        username: user.username || '',
-        phone: user.phone || '',
-        bio: user.bio || '',
-        profilePicture: user.profilePicture || '',
-      });
-      setImagePreview(user.profilePicture || '');
-    }
-  }, [user]);
+    const initProfile = async () => {
+      try {
+        // Önce eldeki user verisiyle formu doldur (Hız için)
+        if (user) fillForm(user);
+
+        // Sonra sunucudan Taze veri çek (Garanti için)
+        // Eğer authService'de 'getProfile' yoksa 'getCurrentUser' veya benzerini kullan
+        // Genelde login işleminde kullanılan endpoint'i tekrar çağırırız.
+        // Eğer böyle bir metodun yoksa, aşağıdaki try-catch bloğunu kaldırıp sadece user'a güvenebilirsin.
+        const freshUser = await authService.getProfile(); 
+        if (freshUser) {
+            setUser(freshUser); // Context'i güncelle
+            fillForm(freshUser); // Formu taze veriyle doldur
+        }
+      } catch (err) {
+        console.error("Güncel veri çekilemedi, context kullanılıyor.", err);
+      } finally {
+        setPageLoading(false);
+      }
+    };
+
+    initProfile();
+  }, []);
+
+  // Formu Doldurma Yardımcısı
+  const fillForm = (userData) => {
+    setFormData({
+      username: userData.username || '',
+      phone: userData.phone || '',
+      bio: userData.bio || userData.about || '', // Backend'de isim farklı olabilir diye kontrol
+    });
+    setImagePreview(userData.profilePicture || '');
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value,
-    });
+    }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Dosya boyutu kontrolü (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
         setError('Resim boyutu 2MB\'dan küçük olmalıdır');
         return;
       }
+      
+      setSelectedFile(file); // Dosyayı kaydet
 
+      // Önizleme oluştur
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64String = reader.result;
-        setFormData({
-          ...formData,
-          profilePicture: base64String,
-        });
-        setImagePreview(base64String);
+        setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -65,57 +90,95 @@ const EditProfile = () => {
     setLoading(true);
 
     try {
-      const updatedUser = await authService.updateProfile(formData);
+      // Gönderilecek objeyi hazırla
+      const payload = { ...formData };
+
+      // KESİN ÇÖZÜM: Resim Mantığı
+      // Eğer yeni bir dosya seçildiyse (selectedFile varsa), Base64'e çevirip ekle.
+      // Seçilmediyse profilePicture alanını hiç gönderme.
+      if (selectedFile) {
+         // Dosyayı Base64 string'e çevirme promise'i
+         const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+         });
+
+         payload.profilePicture = await toBase64(selectedFile);
+      }
+
+      // Backend'e gönder
+      const updatedUser = await authService.updateProfile(payload);
+      
+      // Başarılı olursa Context'i güncelle ve yönlendir
       setUser(updatedUser);
-      navigate('/profile/' + user._id);
+      navigate('/profile/' + updatedUser._id);
+
     } catch (err) {
-      setError(err.response?.data?.message || 'Profil güncellenemedi');
+      console.error(err);
+      
+      // Hata olsa bile, kullanıcı "güncellendi ama hata verdi" diyorsa
+      // sayfayı yenilemek veya profile gitmek mantıklı olabilir.
+      // Ama biz yine de hatayı gösterelim.
+      setError(err.response?.data?.message || 'Profil güncellenirken bir hata oluştu.');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen relative py-8">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
-        style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2087&q=80)',
-        }}
-      ></div>
-
-      <div className="relative z-10 container mx-auto px-4 max-w-2xl">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-gray-800 mb-4">
-            Profil Düzenle
-          </h1>
-          <p className="text-gray-600 text-lg">Profil bilgilerinizi güncelleyin</p>
+  if (pageLoading) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#004225] border-t-transparent"></div>
         </div>
+      );
+  }
 
-        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-8 border border-gray-200">
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans selection:bg-[#004225] selection:text-white flex flex-col">
+      
+      {/* --- HERO ALANI --- */}
+      <div className="relative h-72 w-full bg-[#004225] overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-10 -mb-10 blur-2xl"></div>
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center pb-16 text-center">
+             <h1 className="text-4xl font-bold text-white tracking-tight drop-shadow-md">Profili Düzenle</h1>
+             <p className="text-emerald-100 mt-2 font-medium">Bilgilerini güncel tut, güvenilirliğini artır.</p>
+        </div>
+      </div>
+
+      {/* --- FORM KARTI --- */}
+      <div className="container mx-auto px-4 relative z-20 -mt-24 mb-12 flex justify-center">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 w-full max-w-2xl border border-gray-100">
+          
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded mb-6">
-              <p className="font-medium">{error}</p>
+            <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <p className="font-medium text-sm">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            
             {/* Profil Fotoğrafı */}
-            <div className="flex flex-col items-center mb-6">
-              <div className="relative">
+            <div className="flex flex-col items-center mb-8">
+              <div className="relative group">
                 {imagePreview ? (
                   <img
                     src={imagePreview}
                     alt="Profil"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-blue-200 shadow-lg"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg ring-4 ring-[#004225]/10"
                   />
                 ) : (
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center border-4 border-blue-200 shadow-lg">
-                    <UserIcon className="w-16 h-16 text-white" />
+                  <div className="w-32 h-32 rounded-full bg-emerald-50 flex items-center justify-center border-4 border-white shadow-lg ring-4 ring-[#004225]/10">
+                    <UserIcon className="w-16 h-16 text-[#004225]" />
                   </div>
                 )}
-                <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition shadow-lg">
+                
+                <label className="absolute bottom-0 right-0 bg-[#004225] text-white p-2.5 rounded-full cursor-pointer hover:bg-[#00331b] transition-all shadow-lg transform group-hover:scale-110 border-2 border-white">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -128,11 +191,12 @@ const EditProfile = () => {
                   />
                 </label>
               </div>
-              <p className="text-sm text-gray-500 mt-2">Profil fotoğrafı seçin (max 2MB)</p>
+              <p className="text-xs text-gray-400 mt-3 font-medium">Maksimum dosya boyutu: 2MB</p>
             </div>
 
+            {/* Kullanıcı Adı */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-gray-700 mb-2">
                 Kullanıcı Adı
               </label>
               <input
@@ -142,28 +206,28 @@ const EditProfile = () => {
                 onChange={handleChange}
                 required
                 minLength={3}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="kullaniciadi"
+                className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
               />
             </div>
 
+            {/* Telefon */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Telefon
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Telefon Numarası
               </label>
               <input
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="05XX XXX XX XX"
+                className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
               />
             </div>
 
+            {/* Hakkımda (Bio) */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Hakkımda
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Hakkımda (Bio)
               </label>
               <textarea
                 name="bio"
@@ -171,26 +235,37 @@ const EditProfile = () => {
                 onChange={handleChange}
                 rows="4"
                 maxLength={500}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Kendiniz hakkında kısa bir bilgi yazın..."
+                className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all resize-none"
+                placeholder="Kendinizden kısaca bahsedin..."
               />
-              <p className="text-xs text-gray-500 mt-1">{formData.bio.length} / 500</p>
+              <div className="flex justify-end mt-1">
+                 <p className="text-xs text-gray-400 font-medium">{formData.bio.length} / 500</p>
+              </div>
             </div>
 
-            <div className="flex gap-4">
+            {/* Butonlar */}
+            <div className="flex gap-4 pt-4">
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="flex-1 bg-gray-200 text-gray-700 py-3 px-4 rounded-xl hover:bg-gray-300 transition-all font-semibold"
+                className="flex-1 bg-white border-2 border-gray-200 text-gray-600 py-3 px-4 rounded-xl hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 transition-all font-bold"
               >
                 İptal
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="flex-1 bg-[#004225] text-white py-3 px-4 rounded-xl hover:bg-[#00331b] hover:shadow-lg transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed font-bold flex justify-center items-center gap-2"
               >
-                {loading ? 'Güncelleniyor...' : 'Kaydet'}
+                {loading ? (
+                  <>
+                     <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                     </svg>
+                     <span>Kaydediliyor...</span>
+                  </>
+                ) : 'Değişiklikleri Kaydet'}
               </button>
             </div>
           </form>
@@ -201,4 +276,3 @@ const EditProfile = () => {
 };
 
 export default EditProfile;
-

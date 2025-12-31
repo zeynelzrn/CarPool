@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { rideService } from '../services/rideService';
-import { PlusIcon, LocationIcon, CalendarIcon, MoneyIcon } from '../components/Icons';
+import { PlusIcon, LocationIcon, CalendarIcon, MoneyIcon, CarSolidIcon } from '../components/Icons';
 
 const CITIES = {
   'İstanbul': { lat: 41.0082, lng: 28.9784 },
@@ -85,154 +85,176 @@ const CreateRide = () => {
   };
 
   return (
-    <div className="min-h-screen relative py-8">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
-        style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80)',
-        }}
-      ></div>
+    <div className="min-h-screen bg-gray-50 font-sans selection:bg-[#004225] selection:text-white flex flex-col">
+      
+      {/* --- 1. ÜST HERO ALANI --- */}
+      <div className="relative h-80 w-full bg-[#004225] overflow-hidden">
+        {/* Dekoratif Efektler */}
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+        <div className="absolute bottom-0 left-20 w-64 h-64 bg-white/5 rounded-full blur-2xl"></div>
 
-      <div className="relative z-10 container mx-auto px-4 max-w-2xl">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <PlusIcon className="w-10 h-10 text-blue-600" />
-            <h1 className="text-5xl font-bold text-gray-800">
-              Yolculuk İlanı Oluştur
+        {/* Başlık */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pb-16 text-center px-4">
+           
+            <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md mb-2 flex items-center gap-3">
+              <PlusIcon className="w-10 h-10 text-emerald-300" />   
+                Yeni Yolculuk Oluştur
             </h1>
-          </div>
-          <p className="text-gray-600 text-lg">Yolculuğunuzu paylaşın</p>
+            <p className="text-emerald-100 text-lg font-medium opacity-90">
+                Rotanı belirle, masrafları paylaş, yeni insanlarla tanış.
+            </p>
         </div>
+      </div>
 
-        <div className="bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-xl border border-gray-200">
+      {/* --- 2. YÜZEN FORM KARTI --- */}
+      <div className="container mx-auto px-4 relative z-20 -mt-24 pb-12 flex justify-center">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 w-full max-w-4xl border border-gray-100">
+          
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded mb-6 animate-pulse">
+            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-xl mb-8 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               <p className="font-medium">{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            
+            {/* BÖLÜM 1: Rota Bilgileri */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <LocationIcon className="w-4 h-4 text-blue-600" />
-                Nereden
-              </label>
-              <select
-                name="origin"
-                value={formData.origin}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
-              >
-                <option value="">Şehir Seçin</option>
-                {Object.keys(CITIES).map((city) => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <LocationIcon className="w-5 h-5 text-[#004225]" /> Rota Bilgileri
+                </h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Nereden</label>
+                    <div className="relative">
+                        <select
+                            name="origin"
+                            value={formData.origin}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all appearance-none cursor-pointer"
+                        >
+                            <option value="">Şehir Seçin</option>
+                            {Object.keys(CITIES).map((city) => (
+                            <option key={city} value={city}>{city}</option>
+                            ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                    </div>
+
+                    <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Nereye</label>
+                    <div className="relative">
+                        <select
+                            name="destination"
+                            value={formData.destination}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all appearance-none cursor-pointer"
+                        >
+                            <option value="">Şehir Seçin</option>
+                            {Object.keys(CITIES).map((city) => (
+                            <option key={city} value={city}>{city}</option>
+                            ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                    </div>
+                </div>
             </div>
 
+            <hr className="border-gray-100" />
+
+            {/* BÖLÜM 2: Detaylar */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <LocationIcon className="w-4 h-4 text-blue-600" />
-                Nereye
-              </label>
-              <select
-                name="destination"
-                value={formData.destination}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
-              >
-                <option value="">Şehir Seçin</option>
-                {Object.keys(CITIES).map((city) => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <CalendarIcon className="w-5 h-5 text-[#004225]" /> Tarih ve Detaylar
+                </h3>
+                <div className="grid md:grid-cols-3 gap-6">
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Tarih ve Saat</label>
+                        <input
+                            type="datetime-local"
+                            name="date"
+                            value={formData.date}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            Fiyat (₺) <span className="text-xs font-normal text-gray-400">Kişi Başı</span>
+                        </label>
+                        <input
+                            type="number"
+                            name="price"
+                            value={formData.price}
+                            onChange={handleChange}
+                            required
+                            min="0"
+                            placeholder="150"
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Koltuk Sayısı</label>
+                        <input
+                            type="number"
+                            name="totalSeats"
+                            value={formData.totalSeats}
+                            onChange={handleChange}
+                            required
+                            min="1"
+                            max="8"
+                            placeholder="3"
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
+                        />
+                    </div>
+                </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4 text-blue-600" />
-                Tarih ve Saat
-              </label>
-              <input
-                type="datetime-local"
-                name="date"
-                value={formData.date}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                <MoneyIcon className="w-4 h-4 text-blue-600" />
-                Fiyat (Kişi Başı - ₺)
-              </label>
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                required
-                min="0"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="100"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Toplam Koltuk Sayısı
-              </label>
-              <input
-                type="number"
-                name="totalSeats"
-                value={formData.totalSeats}
-                onChange={handleChange}
-                required
-                min="1"
-                max="8"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="4"
-              />
-            </div>
-
-            <div className="border-t-2 border-gray-200 pt-6 mt-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Araç Bilgileri (İsteğe Bağlı)</h3>
+            {/* BÖLÜM 3: Araç Bilgileri (Gri Kutu) */}
+            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                 <CarSolidIcon className="w-5 h-5 text-[#004225]" /> 
+                 Araç Bilgileri <span className="text-xs font-normal text-gray-500 bg-white px-2 py-1 rounded-md border border-gray-200 ml-2">İsteğe Bağlı</span>
+              </h3>
+              
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Marka
-                  </label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Marka</label>
                   <input
                     type="text"
                     name="carBrand"
                     value={formData.carBrand}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Örn: Toyota"
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#004225] transition-all"
+                    placeholder="Örn: Fiat"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Model
-                  </label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Model</label>
                   <input
                     type="text"
                     name="carModel"
                     value={formData.carModel}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Örn: Corolla"
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#004225] transition-all"
+                    placeholder="Örn: Egea"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Yıl
-                  </label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Yıl</label>
                   <input
                     type="number"
                     name="carYear"
@@ -240,33 +262,46 @@ const CreateRide = () => {
                     onChange={handleChange}
                     min="1900"
                     max={new Date().getFullYear() + 1}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Örn: 2020"
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#004225] transition-all"
+                    placeholder="2022"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Renk
-                  </label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Renk</label>
                   <input
                     type="text"
                     name="carColor"
                     value={formData.carColor}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Örn: Beyaz"
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#004225] transition-all"
+                    placeholder="Beyaz"
                   />
                 </div>
               </div>
             </div>
 
+            {/* Submit Butonu */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-lg"
+              className="w-full bg-[#004225] text-white py-4 rounded-xl hover:bg-[#00331b] hover:shadow-lg transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed font-bold text-lg flex justify-center items-center gap-2"
             >
-              {loading ? 'Oluşturuluyor...' : 'İlan Oluştur'}
+              {loading ? (
+                 <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Oluşturuluyor...</span>
+                 </>
+              ) : (
+                 <>
+                    <PlusIcon className="w-6 h-6" />
+                    İlanı Yayınla
+                 </>
+              )}
             </button>
+
           </form>
         </div>
       </div>

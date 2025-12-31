@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserIcon } from '../components/Icons';
+// Icon importunu kaldırdım çünkü yeni tasarımda text odaklı başlık kullanıyoruz, 
+// istersen tekrar ekleyebilirsin ama bu sade tasarımda gerek kalmıyor.
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -37,82 +38,110 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center py-12 px-4">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2083&q=80)',
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/70 via-indigo-900/70 to-purple-900/70"></div>
+    <div className="min-h-screen bg-gray-50 font-sans selection:bg-[#004225] selection:text-white flex flex-col">
+      
+      {/* --- 1. ÜST HERO ALANI (Dekoratif Yeşil Alan) --- */}
+      <div className="relative h-72 w-full bg-[#004225] overflow-hidden">
+        {/* Arka plan desenleri/blurları */}
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-10 -mb-10 blur-2xl"></div>
+        
+        {/* Başlık (Ortalanmış) */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pb-16 text-center">
+             <h1 className="text-4xl font-bold text-white tracking-tight drop-shadow-md">Tekrar Hoş Geldin</h1>
+             <p className="text-emerald-100 mt-2 font-medium">Yolculuğa kaldığın yerden devam et.</p>
+        </div>
       </div>
 
-      <div className="relative z-10 max-w-md w-full bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/20">
-        <div className="text-center mb-8">
-          <div className="mb-4 flex justify-center">
-            <div className="bg-blue-100 p-4 rounded-full">
-              <UserIcon className="w-12 h-12 text-blue-600" />
+      {/* --- 2. YÜZEN FORM KARTI (Floating Card) --- */}
+      <div className="container mx-auto px-4 relative z-20 -mt-24 mb-12 flex justify-center">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 w-full max-w-lg border border-gray-100">
+          
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">Hesabına Giriş Yap</h2>
+            <p className="text-gray-500 mt-2 text-sm">Lütfen bilgilerinizi giriniz.</p>
+          </div>
+
+          {/* Hata Mesajı Alanı */}
+          {error && (
+            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-center gap-3">
+              <svg className="w-5 h-5 text-red-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-sm text-red-600 font-medium">{error}</p>
             </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Input */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                E-posta Adresi
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                placeholder="ornek@mail.com"
+                className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
+              />
+            </div>
+
+            {/* Password Input */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-bold text-gray-700">
+                  Şifre
+                </label>
+                <a href="#" className="text-xs font-semibold text-[#004225] hover:underline">
+                  Şifremi Unuttum?
+                </a>
+              </div>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                placeholder="••••••••"
+                className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
+              />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#004225] text-white font-bold py-4 rounded-xl hover:bg-[#00331b] hover:shadow-lg transition-all duration-300 transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Giriş Yapılıyor...</span>
+                </>
+              ) : (
+                'Giriş Yap'
+              )}
+            </button>
+          </form>
+
+          {/* Alt Footer */}
+          <div className="mt-8 text-center pt-6 border-t border-gray-100">
+            <p className="text-gray-500 text-sm">
+              Henüz bir hesabın yok mu?{' '}
+              <Link to="/register" className="text-[#004225] font-bold hover:underline ml-1">
+                Aramıza Katıl (Kayıt Ol)
+              </Link>
+            </p>
           </div>
-          <h2 className="text-4xl font-bold text-gray-800">
-            Giriş Yap
-          </h2>
-          <p className="text-gray-600 mt-2">Hesabınıza giriş yapın</p>
+
         </div>
-
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded mb-6">
-            <p className="font-medium">{error}</p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="ornek@email.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Şifre
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-lg"
-          >
-            {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
-          </button>
-        </form>
-
-        <p className="text-center text-gray-600 mt-6">
-          Hesabınız yok mu?{' '}
-          <Link to="/register" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline">
-            Kayıt Ol
-          </Link>
-        </p>
       </div>
     </div>
   );

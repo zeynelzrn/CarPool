@@ -86,119 +86,115 @@ const RatingDisplay = memo(({ userId, userName, compact = false }) => {
     return showAll ? ratings : ratings.slice(0, 3);
   }, [ratings, showAll]);
 
+  // --- COMPACT MODE LOADING & EMPTY ---
   if (loading && compact) {
     return (
-      <div className="text-sm text-gray-400">Yükleniyor...</div>
+      <div className="text-xs text-gray-400 animate-pulse">Yükleniyor...</div>
     );
   }
 
   if (totalRatings === 0 && !loading) {
     return (
-      <div className="text-sm text-gray-500">
+      <div className="text-xs text-gray-400 italic opacity-70">
         Henüz değerlendirme yok
       </div>
     );
   }
 
+  // --- FULL MODE LOADING ---
   if (loading && !compact) {
     return (
-      <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-4 rounded-xl border border-gray-200">
-        <div className="text-sm text-gray-500">Yükleniyor...</div>
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+        <div className="text-sm text-gray-500 animate-pulse">Değerlendirmeler yükleniyor...</div>
       </div>
     );
   }
 
+  // --- COMPACT VIEW (Liste Kartlarında Görünecek Hali) ---
   if (compact) {
-    // Compact mode - only show if loaded, otherwise show minimal info
-    if (loading) {
-      return (
-        <div className="flex items-center gap-2 text-sm text-gray-400">
-          <span>Yükleniyor...</span>
-        </div>
-      );
-    }
-    
-    if (totalRatings === 0) {
-      return (
-        <div className="text-xs text-gray-500">
-          Henüz değerlendirme yok
-        </div>
-      );
-    }
-    
     return (
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1">
-          <span className="text-yellow-400">★</span>
-          <span className="font-semibold text-gray-700">{averageRating.toFixed(1)}</span>
+      <div className="flex items-center gap-2 group">
+        {/* Puan Rozeti */}
+        <div className="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-md border border-yellow-100 shadow-sm">
+          <span className="text-yellow-500 text-xs">★</span>
+          <span className="font-bold text-gray-800 text-xs">{averageRating.toFixed(1)}</span>
         </div>
-        <span className="text-xs text-gray-500">({totalRatings} değerlendirme)</span>
+        
+        {/* Sayı ve Link */}
+        <span className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors">({totalRatings})</span>
         <Link
           to={`/profile/${userId}`}
           onClick={(e) => e.stopPropagation()}
-          className="text-xs text-blue-600 hover:text-blue-700 hover:underline"
+          className="text-xs text-[#004225] hover:text-emerald-700 hover:underline font-medium opacity-0 group-hover:opacity-100 transition-opacity"
         >
-          Tümünü Gör
+          İncele
         </Link>
       </div>
     );
   }
 
+  // --- FULL VIEW (Profil vb. yerlerde görünecek hali) ---
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-4 rounded-xl border border-gray-200">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+      
+      {/* Üst Başlık */}
+      <div className="flex items-center justify-between mb-5">
         <div>
-          <h4 className="font-semibold text-gray-800 mb-1">
+          <h4 className="font-bold text-gray-900 text-sm mb-1">
             {userName} Değerlendirmeleri
           </h4>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-gray-800">{averageRating.toFixed(1)}</span>
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-gray-100 shadow-sm">
+              <span className="text-lg font-bold text-[#004225]">{averageRating.toFixed(1)}</span>
+              <div className="flex items-center -mt-1">
                 {renderStars(Math.round(averageRating))}
               </div>
             </div>
-            <span className="text-sm text-gray-600">({totalRatings} değerlendirme)</span>
+            <span className="text-xs text-gray-500 font-medium">({totalRatings} Yorum)</span>
           </div>
         </div>
+        
         <Link
           to={`/profile/${userId}`}
           onClick={(e) => e.stopPropagation()}
-          className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
+          className="text-xs bg-white text-[#004225] border border-emerald-100 px-3 py-1.5 rounded-full hover:bg-emerald-50 transition-all font-bold shadow-sm"
         >
-          Profil →
+          Profile Git →
         </Link>
       </div>
 
+      {/* Yorumlar Listesi */}
       {ratings.length > 0 && (
-        <div className="space-y-3 max-h-64 overflow-y-auto">
+        <div className="space-y-3 max-h-80 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200">
           {displayedRatings.map((rating) => (
             <div
               key={rating._id}
-              className="bg-white p-3 rounded-lg border border-gray-200"
+              className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <p className="font-medium text-sm text-gray-800">
-                    {rating.fromUser?.username || 'Bilinmeyen Kullanıcı'}
+                  <p className="font-bold text-sm text-gray-800 flex items-center gap-2">
+                    {rating.fromUser?.username || 'Gizli Kullanıcı'}
+                    <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">
+                        {rating.createdAt && new Date(rating.createdAt).toLocaleDateString('tr-TR')}
+                    </span>
                   </p>
-                  {rating.createdAt && (
-                    <p className="text-xs text-gray-500">
-                      {new Date(rating.createdAt).toLocaleDateString('tr-TR')}
-                    </p>
-                  )}
                 </div>
                 {renderStars(rating.rating || 0)}
               </div>
+              
               {rating.comment && (
-                <p className="text-sm text-gray-700 mt-2 italic">
+                <p className="text-sm text-gray-600 mt-2 italic bg-gray-50/50 p-2 rounded-lg border-l-2 border-emerald-200">
                   "{rating.comment}"
                 </p>
               )}
+              
               {rating.ride && (
-                <p className="text-xs text-gray-500 mt-1">
-                  {rating.ride.origin || 'N/A'} → {rating.ride.destination || 'N/A'}
-                </p>
+                <div className="mt-3 flex items-center gap-1">
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded-md font-medium">
+                        🚗 {rating.ride.origin || 'N/A'} → {rating.ride.destination || 'N/A'}
+                    </span>
+                </div>
               )}
             </div>
           ))}
@@ -208,7 +204,7 @@ const RatingDisplay = memo(({ userId, userName, compact = false }) => {
       {ratings.length > 3 && (
         <button
           onClick={() => setShowAll(!showAll)}
-          className="mt-3 text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium w-full text-center"
+          className="mt-4 text-xs text-[#004225] hover:text-emerald-700 hover:underline font-bold w-full text-center py-2 bg-emerald-50/50 rounded-lg transition-colors"
         >
           {showAll ? 'Daha Az Göster' : `Tümünü Gör (${ratings.length})`}
         </button>
@@ -220,4 +216,3 @@ const RatingDisplay = memo(({ userId, userName, compact = false }) => {
 RatingDisplay.displayName = 'RatingDisplay';
 
 export default RatingDisplay;
-

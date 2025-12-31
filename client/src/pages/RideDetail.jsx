@@ -1,20 +1,145 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
 import { rideService } from '../services/rideService';
 import { bookingService } from '../services/bookingService';
 import { useAuth } from '../context/AuthContext';
 import RatingDisplay from '../components/RatingDisplay';
 import ChatModal from '../components/ChatModal';
-import { MapIcon, LocationIcon, CalendarIcon, MoneyIcon, UserIcon, CarSolidIcon } from '../components/Icons';
+import { MapIcon, CalendarIcon, CarSolidIcon } from '../components/Icons';
 import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
+// --- LEAFLET AYARLARI ---
+import iconMarker from 'leaflet/dist/images/marker-icon.png';
+import iconRetina from 'leaflet/dist/images/marker-icon-2x.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: iconRetina,
+    iconUrl: iconMarker,
+    shadowUrl: iconShadow,
+});
+
+// --- YARDIMCI FONKSİYONLAR ---
+
+const calculateBearing = (startLat, startLng, destLat, destLng) => {
+  const startLatRad = (startLat * Math.PI) / 180;
+  const startLngRad = (startLng * Math.PI) / 180;
+  const destLatRad = (destLat * Math.PI) / 180;
+  const destLngRad = (destLng * Math.PI) / 180;
+
+  const y = Math.sin(destLngRad - startLngRad) * Math.cos(destLatRad);
+  const x =
+    Math.cos(startLatRad) * Math.sin(destLatRad) -
+    Math.sin(startLatRad) * Math.cos(destLatRad) * Math.cos(destLngRad - startLngRad);
+  const brng = (Math.atan2(y, x) * 180) / Math.PI;
+  return (brng + 360) % 360;
+};
+
+// --- HAREKETLİ ARABA ---
+const MovingCarMarker = ({ routeCoords, duration = 15000 }) => {
+    const map = useMap();
+    const markerRef = useRef(null);
+    const reqRef = useRef(null);
+    const startTimeRef = useRef(null);
+    const lastAngleRef = useRef(0);
+
+    const carIcon = L.divIcon({
+        className: 'car-icon-container',
+        html: `<div id="car-sprite" style="
+            font-size: 40px; 
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s linear; 
+            transform-origin: center center;
+            will-change: transform;
+            margin-top: -10px; 
+            margin-left: -5px;
+        ">🚗</div>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+    });
+
+    useEffect(() => {
+        if (!routeCoords || routeCoords.length < 2) return;
+
+        if (!markerRef.current) {
+            markerRef.current = L.marker(routeCoords[0], { icon: carIcon }).addTo(map);
+        }
+
+        const animate = (time) => {
+            if (!startTimeRef.current) startTimeRef.current = time;
+            const timeElapsed = time - startTimeRef.current;
+            let progress = (timeElapsed % duration) / duration;
+
+            if (progress >= 1) {
+                startTimeRef.current = time;
+                progress = 0;
+            }
+
+            const totalPoints = routeCoords.length - 1;
+            const currentStep = Math.floor(progress * totalPoints);
+            const nextStep = (currentStep + 1) % routeCoords.length;
+
+            const p1 = routeCoords[currentStep];
+            const p2 = routeCoords[nextStep];
+
+            if (p1 && p2 && markerRef.current) {
+                // Pozisyon
+                const segmentProgress = (progress * totalPoints) - currentStep;
+                const lat = p1[0] + (p2[0] - p1[0]) * segmentProgress;
+                const lng = p1[1] + (p2[1] - p1[1]) * segmentProgress;
+                markerRef.current.setLatLng([lat, lng]);
+
+                // Açı
+                const targetBearing = calculateBearing(p1[0], p1[1], p2[0], p2[1]);
+                let delta = targetBearing - lastAngleRef.current;
+                while (delta < -180) delta += 360;
+                while (delta > 180) delta -= 360;
+                const smoothAngle = lastAngleRef.current + delta;
+                lastAngleRef.current = smoothAngle;
+
+                // İkon Döndürme
+                const iconElement = markerRef.current.getElement();
+                if (iconElement) {
+                    const carSprite = iconElement.querySelector('#car-sprite');
+                    if (carSprite) {
+                        // scaleX(-1) ile Y düzleminde ayna görüntüsü (ters çevirme)
+                        // rotate(angle - 90) ile yön ayarlama
+                        carSprite.style.transform = `rotate(${smoothAngle - 90}deg) scaleX(-1)`; 
+                    }
+                }
+            }
+            reqRef.current = requestAnimationFrame(animate);
+        };
+
+        reqRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            cancelAnimationFrame(reqRef.current);
+            if (markerRef.current) {
+                markerRef.current.remove();
+                markerRef.current = null;
+            }
+        };
+    }, [routeCoords, duration, map]);
+
+    return null;
+};
+
+
+// --- ANA COMPONENT ---
 const RideDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isPassenger } = useAuth();
 
   const [ride, setRide] = useState(null);
+  const [routePath, setRoutePath] = useState([]);
   const [loading, setLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -35,12 +160,33 @@ const RideDetail = () => {
     try {
       const data = await rideService.getRideById(id);
       setRide(data);
+      if (data && data.coordinates) {
+          fetchRealRoute(data.coordinates);
+      }
     } catch (error) {
-      console.error('Yolculuk detayı yüklenemedi:', error);
+      console.error('Hata:', error);
       setMessage({ type: 'error', text: 'Yolculuk bulunamadı' });
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchRealRoute = async (coords) => {
+      try {
+          const url = `https://router.project-osrm.org/route/v1/driving/${coords.startLng},${coords.startLat};${coords.endLng},${coords.endLat}?overview=full&geometries=geojson`;
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.routes && data.routes.length > 0) {
+              const coordinates = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+              setRoutePath(coordinates);
+          } else {
+              setRoutePath([[coords.startLat, coords.startLng], [coords.endLat, coords.endLng]]);
+          }
+      } catch (error) {
+          console.error("Rota hatası:", error);
+          setRoutePath([[coords.startLat, coords.startLng], [coords.endLat, coords.endLng]]);
+      }
   };
 
   const checkBooking = async () => {
@@ -49,7 +195,7 @@ const RideDetail = () => {
       const booking = bookings.find(b => b.ride._id === id && b.status === 'approved');
       setHasBooking(!!booking);
     } catch (error) {
-      console.error('Rezervasyon kontrolü yapılamadı:', error);
+      console.error(error);
     }
   };
 
@@ -57,34 +203,21 @@ const RideDetail = () => {
     try {
       setBookingLoading(true);
       await bookingService.createBooking(id);
-      setMessage({ type: 'success', text: 'Rezervasyon isteği gönderildi!' });
+      setMessage({ type: 'success', text: 'İstek gönderildi!' });
       fetchRideDetail();
       checkBooking();
     } catch (error) {
       setMessage({
         type: 'error',
-        text: error.response?.data?.message || 'Rezervasyon başarısız',
+        text: error.response?.data?.message || 'İşlem başarısız',
       });
     } finally {
       setBookingLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Yükleniyor...</p>
-      </div>
-    );
-  }
-
-  if (!ride) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Yolculuk bulunamadı</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Yükleniyor...</div>;
+  if (!ride) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Bulunamadı</div>;
 
   const startPos = [ride.coordinates.startLat, ride.coordinates.startLng];
   const endPos = [ride.coordinates.endLat, ride.coordinates.endLng];
@@ -94,203 +227,141 @@ const RideDetail = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
-      <div className="container mx-auto px-4 max-w-5xl">
-        <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="bg-white p-3 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-          >
-            ← Geri
-          </button>
-          <div className="flex items-center gap-3">
-            <MapIcon className="w-10 h-10 text-blue-600" />
-            <h1 className="text-5xl font-bold text-gray-800">
-              Yolculuk Detayı
+    <div className="min-h-screen bg-gray-50 font-sans selection:bg-[#004225] selection:text-white flex flex-col">
+      
+      {/* HERO */}
+      <div className="relative h-80 w-full bg-[#004225] overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+        
+    
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center pb-16 text-center px-4">
+            <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md mb-2">
+                {ride.origin} <span className="text-emerald-300">→</span> {ride.destination}
             </h1>
-          </div>
+            <p className="text-emerald-100 text-lg font-medium">Yolculuk Detayları</p>
         </div>
+      </div>
 
-        {message.text && (
-          <div
-            className={`px-6 py-4 rounded-xl mb-6 shadow-lg ${
-              message.type === 'success'
-                ? 'bg-green-50 border-l-4 border-green-500 text-green-700'
-                : 'bg-red-50 border-l-4 border-red-500 text-red-700'
-            }`}
-          >
-            <p className="font-semibold">{message.text}</p>
-          </div>
-        )}
-
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-          <div className="p-8">
-            <div className="grid md:grid-cols-2 gap-8 mb-8">
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl">
-                <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                  Yolculuk Bilgileri
-                </h3>
-                <div className="space-y-4 text-gray-700">
-                  <div className="flex items-center gap-3">
-                    <LocationIcon className="w-6 h-6 text-blue-600" />
-                    <div>
-                      <p className="text-sm text-gray-500">Güzergah</p>
-                      <p className="font-bold text-lg">{ride.origin} → {ride.destination}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CalendarIcon className="w-6 h-6 text-blue-600" />
-                    <div>
-                      <p className="text-sm text-gray-500">Tarih</p>
-                      <p className="font-semibold">{new Date(ride.date).toLocaleString('tr-TR')}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <MoneyIcon className="w-6 h-6 text-blue-600" />
-                    <div>
-                      <p className="text-sm text-gray-500">Fiyat</p>
-                      <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                        {ride.price} ₺
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 flex items-center justify-center">
-                      <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Müsait Koltuk</p>
-                      <p className="font-semibold">
-                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
-                          {ride.availableSeats} / {ride.totalSeats}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                  {ride.carInfo && (ride.carInfo.brand || ride.carInfo.model) && (
-                    <div className="flex items-center gap-3 mt-4 pt-4 border-t border-blue-200">
-                      <CarSolidIcon className="w-6 h-6 text-blue-600" />
-                      <div>
-                        <p className="text-sm text-gray-500">Araç</p>
-                        <p className="font-semibold">
-                          {ride.carInfo.brand} {ride.carInfo.model}
-                          {ride.carInfo.year && ` (${ride.carInfo.year})`}
-                          {ride.carInfo.color && ` - ${ride.carInfo.color}`}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+      {/* İÇERİK */}
+      <div className="container mx-auto px-4 relative z-20 -mt-24 pb-12">
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+            
+            {message.text && (
+                <div className={`px-6 py-4 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-800'}`}>
+                    {message.text}
                 </div>
-              </div>
+            )}
 
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl">
-                <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                  <UserIcon className="w-6 h-6 text-purple-600" />
-                  Sürücü Bilgileri
-                </h3>
-                <div className="space-y-4 text-gray-700 mb-6">
-                  <div className="flex items-center gap-3">
-                    <UserIcon className="w-6 h-6 text-purple-600" />
-                    <div>
-                      <p className="text-sm text-gray-500">İsim</p>
-                      <Link
-                        to={`/profile/${ride.driver._id}`}
-                        className="font-semibold text-lg hover:text-blue-600 transition-colors"
-                      >
-                        {ride.driver.username}
-                      </Link>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <div>
-                      <p className="text-sm text-gray-500">Email</p>
-                      <p className="font-semibold">{ride.driver.email}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sürücü Değerlendirmeleri */}
-                <div className="mt-6">
-                  <RatingDisplay
-                    userId={ride.driver._id}
-                    userName={ride.driver.username}
-                    compact={false}
-                  />
-                </div>
-
-                <div className="mt-6 space-y-3">
-                  {isPassenger && ride.availableSeats > 0 && (
-                    <button
-                      onClick={handleBooking}
-                      disabled={bookingLoading}
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-lg"
-                    >
-                      {bookingLoading ? 'Gönderiliyor...' : 'Rezervasyon İsteği Gönder'}
+            <div className="grid lg:grid-cols-3">
+                <div className="lg:col-span-2 p-8 border-b lg:border-b-0 lg:border-r border-gray-100">
+                  <div className="flex pb-4 md:left-8 z-10">
+                    <button onClick={() => navigate(-1)} className="flex items-center bg-[#004225] gap-2 text-white/80 hover:text-white transition-colors font-medium bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm">
+                        ← Geri Dön
                     </button>
-                  )}
-                  
-                  {/* Yolcu için mesajlaş butonu - onaylanmış rezervasyon varsa */}
-                  {isPassenger && hasBooking && ride.driver && (
-                    <button
-                      onClick={() => setChatOpen(true)}
-                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] font-semibold text-lg"
-                    >
-                      Mesajlaş
-                    </button>
-                  )}
-                  
-                  {/* Sürücü için mesajları gör butonu */}
-                  {user && user.role === 'driver' && ride.driver._id === user._id && (
-                    <button
-                      onClick={() => setChatOpen(true)}
-                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-4 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] font-semibold text-lg"
-                    >
-                      Mesajları Gör
-                    </button>
-                  )}
+                  </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        <MapIcon className="w-6 h-6 text-[#004225]" /> Rota Takibi
+                    </h3>
+
+                    <div className="h-96 w-full rounded-2xl overflow-hidden shadow-inner border border-gray-200 relative z-0">
+                        <MapContainer
+                            center={centerPos}
+                            zoom={7}
+                            style={{ height: '100%', width: '100%' }}
+                            scrollWheelZoom={false}
+                        >
+                            <TileLayer
+                                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                                attribution='&copy; OpenStreetMap'
+                            />
+                            
+                            <Marker position={startPos}><Popup>Başlangıç</Popup></Marker>
+                            <Marker position={endPos}><Popup>Varış</Popup></Marker>
+
+                            {routePath.length > 0 && (
+                                <>
+                                    <Polyline positions={routePath} color="#004225" weight={5} opacity={0.6} />
+                                    <MovingCarMarker routeCoords={routePath} duration={15000} />
+                                </>
+                            )}
+                        </MapContainer>
+                    </div>
+
+                    <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <div className="text-xs text-gray-500 font-bold uppercase mb-1 flex items-center gap-1">
+                                <CalendarIcon className="w-4 h-4" /> Tarih
+                            </div>
+                            <div className="font-bold text-gray-900 text-lg">{new Date(ride.date).toLocaleDateString('tr-TR')}</div>
+                        </div>
+                        
+                        {/* ARAÇ BİLGİSİ - GÜNCELLENDİ */}
+                        {ride.carInfo && (ride.carInfo.brand || ride.carInfo.model) && (
+                             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <div className="text-xs text-gray-500 font-bold uppercase mb-1 flex items-center gap-1">
+                                    <CarSolidIcon className="w-4 h-4" /> Araç
+                                </div>
+                                <div className="font-bold text-gray-900 text-lg capitalize">
+                                    {ride.carInfo.brand} {ride.carInfo.model}
+                                </div>
+                                {(ride.carInfo.color || ride.carInfo.year) && (
+                                    <div className="text-sm text-gray-500 mt-1 capitalize">
+                                        {ride.carInfo.color} {ride.carInfo.year ? `• ${ride.carInfo.year}` : ''}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
-              </div>
+
+                <div className="p-8 my-auto bg-gray-50/50">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 text-center">
+                        <p className="text-sm text-gray-500 font-medium mb-1">Kişi Başı</p>
+                        <div className="text-4xl font-bold text-[#004225]">{ride.price} ₺</div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+                        <h4 className="text-xs font-bold text-gray-400 uppercase mb-4">Sürücü</h4>
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-[#004225] font-bold text-lg">
+                                {ride.driver.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <Link to={`/profile/${ride.driver._id}`} className="font-bold text-gray-900 hover:underline">
+                                    {ride.driver.username}
+                                </Link>
+                                <div className="text-sm"><RatingDisplay userId={ride.driver._id} compact={true} /></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {isPassenger && ride.availableSeats > 0 && (
+                        <button
+                            onClick={handleBooking}
+                            disabled={bookingLoading}
+                            className="w-full bg-[#004225] text-white py-4 rounded-xl hover:bg-[#00331b] shadow-lg transition-all font-bold"
+                        >
+                            {bookingLoading ? 'İşleniyor...' : 'Rezervasyon Yap'}
+                        </button>
+                    )}
+
+                     {((isPassenger && hasBooking) || (user && user.role === 'driver' && ride.driver._id === user._id)) && (
+                             <button
+                                onClick={() => setChatOpen(true)}
+                                className="w-full bg-white text-[#004225] border-2 border-[#004225] py-3 rounded-xl hover:bg-emerald-50 transition-all font-bold mt-3"
+                             >
+                                {user.role === 'driver' ? 'Mesajları Gör' : 'Mesajlaş'}
+                             </button>
+                    )}
+                </div>
             </div>
-
-            <div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <MapIcon className="w-6 h-6 text-blue-600" />
-                Rota Haritası
-              </h3>
-              <div className="h-96 rounded-xl overflow-hidden shadow-lg border-2 border-gray-200">
-                <MapContainer
-                  center={centerPos}
-                  zoom={6}
-                  style={{ height: '100%', width: '100%' }}
-                >
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  />
-                  <Marker position={startPos}>
-                    <Popup>{ride.origin}</Popup>
-                  </Marker>
-                  <Marker position={endPos}>
-                    <Popup>{ride.destination}</Popup>
-                  </Marker>
-                  <Polyline positions={[startPos, endPos]} color="blue" weight={4} />
-                </MapContainer>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
       {chatOpen && ride && (
-        <ChatModal
-          isOpen={chatOpen}
-          onClose={() => setChatOpen(false)}
-          ride={ride}
-          otherUser={user?.role === 'passenger' ? ride.driver : null}
-        />
+        <ChatModal isOpen={chatOpen} onClose={() => setChatOpen(false)} ride={ride} otherUser={user?.role === 'passenger' ? ride.driver : null} />
       )}
     </div>
   );
