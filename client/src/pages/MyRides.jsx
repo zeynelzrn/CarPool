@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { rideService } from '../services/rideService';
 import { bookingService } from '../services/bookingService';
-import { ratingService } from '../services/ratingService'; // Kullanılmıyorsa çıkarılabilir
 import RatingModal from '../components/RatingModal';
 import RatingDisplay from '../components/RatingDisplay';
 import ChatModal from '../components/ChatModal';
-import { ListIcon, CarSolidIcon, TicketIcon, CheckIcon, XIcon, StarIcon, TrashIcon, PlusIcon, UserIcon } from '../components/Icons';
+import { ListIcon, CarSolidIcon, TicketIcon, CheckIcon, XIcon, StarIcon, TrashIcon, UserIcon } from '../components/Icons';
 
 const MyRides = () => {
   const [rides, setRides] = useState([]);
@@ -139,7 +138,7 @@ const MyRides = () => {
       </div>
 
       {/* --- 2. ANA İÇERİK (Yüzen Kartlar) --- */}
-      <div className="container mt-4 mx-auto px-4 relative z-20 -mt-24 pb-12">
+      <div className="container mx-auto px-4 relative z-20 -mt-20 pb-12">
         
         {rides.length === 0 ? (
           <div className="bg-white p-12 rounded-3xl shadow-xl text-center border border-gray-100 max-w-2xl mx-auto">
