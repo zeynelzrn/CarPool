@@ -31,7 +31,7 @@ const Login = () => {
       await login(formData);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Giriş başarısız');
+      setError(err.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -49,8 +49,8 @@ const Login = () => {
         
         {/* Başlık (Ortalanmış) */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pb-16 text-center">
-             <h1 className="text-4xl font-bold text-white tracking-tight drop-shadow-md">Tekrar Hoş Geldin</h1>
-             <p className="text-emerald-100 mt-2 font-medium">Yolculuğa kaldığın yerden devam et.</p>
+             <h1 className="text-4xl font-bold text-white tracking-tight drop-shadow-md">Welcome Back</h1>
+             <p className="text-emerald-100 mt-2 font-medium">Continue your journey from where you left off.</p>
         </div>
       </div>
 
@@ -59,8 +59,8 @@ const Login = () => {
         <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 w-full max-w-lg border border-gray-100">
           
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Hesabına Giriş Yap</h2>
-            <p className="text-gray-500 mt-2 text-sm">Lütfen bilgilerinizi giriniz.</p>
+            <h2 className="text-2xl font-bold text-gray-900">Sign In to Your Account</h2>
+            <p className="text-gray-500 mt-2 text-sm">Please enter your information.</p>
           </div>
 
           {/* Hata Mesajı Alanı */}
@@ -77,7 +77,7 @@ const Login = () => {
             {/* Email Input */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                E-posta Adresi
+                Email Address
               </label>
               <input
                 type="email"
@@ -85,7 +85,7 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                placeholder="ornek@mail.com"
+                placeholder="example@mail.com"
                 className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
               />
             </div>
@@ -94,10 +94,10 @@ const Login = () => {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-bold text-gray-700">
-                  Şifre
+                  Password
                 </label>
                 <a href="#" className="text-xs font-semibold text-[#004225] hover:underline">
-                  Şifremi Unuttum?
+                  Forgot Password?
                 </a>
               </div>
               <input
@@ -123,10 +123,10 @@ const Login = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>Giriş Yapılıyor...</span>
+                  <span>Signing In...</span>
                 </>
               ) : (
-                'Giriş Yap'
+                'Sign In'
               )}
             </button>
           </form>
@@ -134,9 +134,9 @@ const Login = () => {
           {/* Alt Footer */}
           <div className="mt-8 text-center pt-6 border-t border-gray-100">
             <p className="text-gray-500 text-sm">
-              Henüz bir hesabın yok mu?{' '}
+              Don't have an account yet?{' '}
               <Link to="/register" className="text-[#004225] font-bold hover:underline ml-1">
-                Aramıza Katıl (Kayıt Ol)
+                Join Us (Sign Up)
               </Link>
             </p>
           </div>

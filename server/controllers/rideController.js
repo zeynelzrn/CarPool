@@ -1,4 +1,5 @@
 const Ride = require('../models/Ride');
+const { getIO } = require('../socket/socketServer');
 
 // @desc    Yeni yolculuk ilanı oluştur
 // @route   POST /api/rides
@@ -19,7 +20,17 @@ const createRide = async (req, res) => {
       carDetails
     });
 
-    res.status(201).json(ride);
+    const populatedRide = await Ride.findById(ride._id)
+      .populate('driver', 'username email');
+
+    // Socket.io ile tüm kullanıcılara yeni ilan bildirimi gönder
+    const io = getIO();
+    io.emit('new-ride-created', {
+      ride: populatedRide,
+      message: `${populatedRide.driver.username} yeni bir yolculuk ilanı oluşturdu: ${origin} → ${destination}`
+    });
+
+    res.status(201).json(populatedRide);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

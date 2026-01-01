@@ -69,7 +69,7 @@ const EditProfile = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        setError('Resim boyutu 2MB\'dan küçük olmalıdır');
+        setError('Image size must be less than 2MB');
         return;
       }
       
@@ -121,7 +121,7 @@ const EditProfile = () => {
       // Hata olsa bile, kullanıcı "güncellendi ama hata verdi" diyorsa
       // sayfayı yenilemek veya profile gitmek mantıklı olabilir.
       // Ama biz yine de hatayı gösterelim.
-      setError(err.response?.data?.message || 'Profil güncellenirken bir hata oluştu.');
+      setError(err.response?.data?.message || 'An error occurred while updating profile.');
     } finally {
       setLoading(false);
     }
@@ -145,8 +145,8 @@ const EditProfile = () => {
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-10 -mb-10 blur-2xl"></div>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center pb-16 text-center">
-             <h1 className="text-4xl font-bold text-white tracking-tight drop-shadow-md">Profili Düzenle</h1>
-             <p className="text-emerald-100 mt-2 font-medium">Bilgilerini güncel tut, güvenilirliğini artır.</p>
+             <h1 className="text-4xl font-bold text-white tracking-tight drop-shadow-md">Edit Profile</h1>
+             <p className="text-emerald-100 mt-2 font-medium">Keep your information up to date, increase your reliability.</p>
         </div>
       </div>
 
@@ -169,7 +169,7 @@ const EditProfile = () => {
                 {imagePreview ? (
                   <img
                     src={imagePreview}
-                    alt="Profil"
+                    alt="Profile"
                     className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg ring-4 ring-[#004225]/10"
                   />
                 ) : (
@@ -191,13 +191,13 @@ const EditProfile = () => {
                   />
                 </label>
               </div>
-              <p className="text-xs text-gray-400 mt-3 font-medium">Maksimum dosya boyutu: 2MB</p>
+              <p className="text-xs text-gray-400 mt-3 font-medium">Maximum file size: 2MB</p>
             </div>
 
             {/* Kullanıcı Adı */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                Kullanıcı Adı
+                Username
               </label>
               <input
                 type="text"
@@ -213,7 +213,7 @@ const EditProfile = () => {
             {/* Telefon */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                Telefon Numarası
+                Phone Number
               </label>
               <input
                 type="tel"
@@ -227,7 +227,7 @@ const EditProfile = () => {
             {/* Hakkımda (Bio) */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                Hakkımda (Bio)
+                About Me (Bio)
               </label>
               <textarea
                 name="bio"
@@ -236,7 +236,7 @@ const EditProfile = () => {
                 rows="4"
                 maxLength={500}
                 className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all resize-none"
-                placeholder="Kendinizden kısaca bahsedin..."
+                placeholder="Tell us briefly about yourself..."
               />
               <div className="flex justify-end mt-1">
                  <p className="text-xs text-gray-400 font-medium">{formData.bio.length} / 500</p>
@@ -250,7 +250,7 @@ const EditProfile = () => {
                 onClick={() => navigate(-1)}
                 className="flex-1 bg-white border-2 border-gray-200 text-gray-600 py-3 px-4 rounded-xl hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300 transition-all font-bold"
               >
-                İptal
+                Cancel
               </button>
               <button
                 type="submit"
@@ -263,9 +263,9 @@ const EditProfile = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                      </svg>
-                     <span>Kaydediliyor...</span>
+                     <span>Saving...</span>
                   </>
-                ) : 'Değişiklikleri Kaydet'}
+                ) : 'Save Changes'}
               </button>
             </div>
           </form>

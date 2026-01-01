@@ -32,7 +32,7 @@ const Register = () => {
       await register(formData);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Kayıt başarısız');
+      setError(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -50,9 +50,9 @@ const Register = () => {
         
         {/* Başlık */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pb-20 text-center px-4">
-             <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md">Aramıza Katıl</h1>
+             <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md">Join Us</h1>
              <p className="text-emerald-100 mt-3 text-lg font-medium max-w-lg">
-               Saniyeler içinde hesabını oluştur, yolculuğun tadını çıkar.
+               Create your account in seconds and enjoy your journey.
              </p>
         </div>
       </div>
@@ -62,8 +62,8 @@ const Register = () => {
         <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 w-full max-w-lg border border-gray-100">
           
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Hesap Oluştur</h2>
-            <p className="text-gray-500 mt-2 text-sm">Gerekli bilgileri girerek başla.</p>
+            <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
+            <p className="text-gray-500 mt-2 text-sm">Get started by entering the required information.</p>
           </div>
 
           {/* Hata Mesajı */}
@@ -81,7 +81,7 @@ const Register = () => {
             {/* Kullanıcı Adı */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                Kullanıcı Adı
+                Username
               </label>
               <input
                 type="text"
@@ -90,7 +90,7 @@ const Register = () => {
                 onChange={handleChange}
                 required
                 minLength={3}
-                placeholder="kullaniciadi"
+                placeholder="username"
                 className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
               />
             </div>
@@ -98,7 +98,7 @@ const Register = () => {
             {/* Email */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                E-posta Adresi
+                Email Address
               </label>
               <input
                 type="email"
@@ -106,7 +106,7 @@ const Register = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                placeholder="ornek@mail.com"
+                placeholder="example@mail.com"
                 className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
               />
             </div>
@@ -114,7 +114,7 @@ const Register = () => {
             {/* Şifre */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                Şifre
+                Password
               </label>
               <input
                 type="password"
@@ -126,13 +126,13 @@ const Register = () => {
                 placeholder="••••••••"
                 className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
               />
-              <p className="text-xs text-gray-400 mt-1 ml-1">En az 6 karakter olmalıdır.</p>
+              <p className="text-xs text-gray-400 mt-1 ml-1">Must be at least 6 characters.</p>
             </div>
 
             {/* Rol Seçimi (Select Box) */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                Kullanım Amacı (Rol)
+                Usage Purpose (Role)
               </label>
               <div className="relative">
                 <select
@@ -141,8 +141,8 @@ const Register = () => {
                   onChange={handleChange}
                   className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all appearance-none cursor-pointer"
                 >
-                  <option value="passenger">Yolcu (Araç Arıyorum)</option>
-                  <option value="driver">Sürücü (Yolcu Arıyorum)</option>
+                  <option value="passenger">Passenger (Looking for a ride)</option>
+                  <option value="driver">Driver (Looking for passengers)</option>
                 </select>
                 {/* Custom Chevron Icon for Select */}
                 <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
@@ -163,10 +163,10 @@ const Register = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>Hesap Oluşturuluyor...</span>
+                  <span>Creating Account...</span>
                 </>
               ) : (
-                'Kayıt Ol'
+                'Sign Up'
               )}
             </button>
           </form>
@@ -174,9 +174,9 @@ const Register = () => {
           {/* Alt Footer */}
           <div className="mt-8 text-center pt-6 border-t border-gray-100">
             <p className="text-gray-500 text-sm">
-              Zaten bir hesabın var mı?{' '}
+              Already have an account?{' '}
               <Link to="/login" className="text-[#004225] font-bold hover:underline ml-1">
-                Giriş Yap
+                Sign In
               </Link>
             </p>
           </div>

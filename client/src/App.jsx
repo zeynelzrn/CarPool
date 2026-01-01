@@ -1,8 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import NotificationToast from './components/NotificationToast';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -41,6 +43,7 @@ function AppContent() {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <ScrollToTop />
       <Navbar />
+      <NotificationToast />
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -95,7 +98,9 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppContent />
+        <SocketProvider>
+          <AppContent />
+        </SocketProvider>
       </AuthProvider>
     </Router>
   );

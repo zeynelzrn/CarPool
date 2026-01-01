@@ -1,5 +1,6 @@
 const Booking = require('../models/Booking');
 const Ride = require('../models/Ride');
+const { getIO } = require('../socket/socketServer');
 
 // @desc    Yolculuğa rezervasyon isteği gönder
 // @route   POST /api/bookings
@@ -34,6 +35,15 @@ const createBooking = async (req, res) => {
     const populatedBooking = await Booking.findById(booking._id)
       .populate('ride')
       .populate('passenger', 'username email');
+
+    // Socket.io ile sürücüye bildirim gönder
+    const io = getIO();
+    io.to(`user_${ride.driver.toString()}`).emit('new-booking-request', {
+      booking: populatedBooking,
+      message: `${populatedBooking.passenger.username} size rezervasyon isteği gönderdi`
+    });
+    // Ride room'una da gönder (eğer sürücü ride room'una bağlıysa)
+    io.to(`ride_${rideId.toString()}`).emit('booking-updated', populatedBooking);
 
     res.status(201).json(populatedBooking);
   } catch (error) {
@@ -141,6 +151,20 @@ const updateBookingStatus = async (req, res) => {
     const updatedBooking = await Booking.findById(booking._id)
       .populate('ride')
       .populate('passenger', 'username email');
+
+    // Socket.io ile yolcuya bildirim gönder
+    const io = getIO();
+    const message = status === 'approved' 
+      ? 'Rezervasyon isteğiniz onaylandı!' 
+      : 'Rezervasyon isteğiniz reddedildi.';
+    
+    io.to(`user_${booking.passenger.toString()}`).emit('booking-status-updated', {
+      booking: updatedBooking,
+      message: message
+    });
+    
+    // Ride room'una da gönder
+    io.to(`ride_${booking.ride._id.toString()}`).emit('booking-updated', updatedBooking);
 
     res.json(updatedBooking);
   } catch (error) {

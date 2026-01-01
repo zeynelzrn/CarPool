@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { rideService } from '../services/rideService';
+import { useSocket } from '../context/SocketContext';
 import RatingDisplay from '../components/RatingDisplay';
 import { SearchIcon, LocationIcon, CalendarIcon, MoneyIcon } from '../components/Icons';
 
 const RideList = () => {
+  const { socket } = useSocket();
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -18,6 +20,42 @@ const RideList = () => {
   useEffect(() => {
     fetchRides();
   }, []);
+
+  // Real-time yeni ilan bildirimi dinle
+  useEffect(() => {
+    if (socket) {
+      const handleNewRide = (data) => {
+        setRides(prev => {
+          // İlan zaten var mı kontrol et
+          const exists = prev.some(ride => ride._id === data.ride._id);
+          if (exists) return prev;
+          
+          // Filtrelere uyuyor mu kontrol et
+          let shouldAdd = true;
+          if (filters.origin && !data.ride.origin.toLowerCase().includes(filters.origin.toLowerCase())) {
+            shouldAdd = false;
+          }
+          if (filters.destination && !data.ride.destination.toLowerCase().includes(filters.destination.toLowerCase())) {
+            shouldAdd = false;
+          }
+          if (filters.maxPrice && data.ride.price > Number(filters.maxPrice)) {
+            shouldAdd = false;
+          }
+          
+          if (shouldAdd && data.ride.status === 'active' && data.ride.availableSeats > 0) {
+            return [data.ride, ...prev];
+          }
+          return prev;
+        });
+      };
+
+      socket.on('new-ride-created', handleNewRide);
+
+      return () => {
+        socket.off('new-ride-created', handleNewRide);
+      };
+    }
+  }, [socket, filters]);
 
   const fetchRides = async (searchFilters = {}) => {
     try {
@@ -40,7 +78,7 @@ const RideList = () => {
       
       setRides(filteredData);
     } catch (error) {
-      console.error('Yolculuklar yüklenemedi:', error);
+      console.error('Failed to load rides:', error);
     } finally {
       setLoading(false);
     }
@@ -73,10 +111,10 @@ const RideList = () => {
           
           <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md mb-2 flex items-center gap-3">
             <SearchIcon className="w-10 h-10 text-emerald-300" />
-            Yolculuk Ara
+            Find a Ride
           </h1>
           <p className="text-emerald-100 text-lg font-medium">
-            Sana en uygun rotayı bul ve hemen yerini ayırt.
+            Find the best route for you and book your seat immediately.
           </p>
         </div>
       </div>
@@ -88,10 +126,10 @@ const RideList = () => {
           <form onSubmit={handleSearch}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 items-end">
               
-              {/* Nereden */}
+              {/* From */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
-                  <LocationIcon className="w-4 h-4 text-[#004225]" /> Nereden
+                  <LocationIcon className="w-4 h-4 text-[#004225]" /> From
                 </label>
                 <input
                   type="text"
@@ -99,14 +137,14 @@ const RideList = () => {
                   value={filters.origin}
                   onChange={handleFilterChange}
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all font-medium text-gray-900"
-                  placeholder="Şehir..."
+                  placeholder="City..."
                 />
               </div>
 
-              {/* Nereye */}
+              {/* To */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
-                  <LocationIcon className="w-4 h-4 text-[#004225]" /> Nereye
+                  <LocationIcon className="w-4 h-4 text-[#004225]" /> To
                 </label>
                 <input
                   type="text"
@@ -114,14 +152,14 @@ const RideList = () => {
                   value={filters.destination}
                   onChange={handleFilterChange}
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all font-medium text-gray-900"
-                  placeholder="Şehir..."
+                  placeholder="City..."
                 />
               </div>
 
-              {/* Tarih */}
+              {/* Date */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
-                  <CalendarIcon className="w-4 h-4 text-[#004225]" /> Tarih
+                  <CalendarIcon className="w-4 h-4 text-[#004225]" /> Date
                 </label>
                 <input
                   type="date"
@@ -132,10 +170,10 @@ const RideList = () => {
                 />
               </div>
 
-              {/* Max Fiyat */}
+              {/* Max Price */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
-                  <MoneyIcon className="w-4 h-4 text-[#004225]" /> Max Fiyat
+                  <MoneyIcon className="w-4 h-4 text-[#004225]" /> Max Price
                 </label>
                 <input
                   type="number"
@@ -144,23 +182,23 @@ const RideList = () => {
                   onChange={handleFilterChange}
                   min="0"
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all font-medium text-gray-900"
-                  placeholder="₺ Limit"
+                  placeholder="$ Limit"
                 />
               </div>
 
-              {/* Sıralama & Buton (Hizalama için flex container) */}
+              {/* Sort & Button */}
               <div className="flex gap-2">
-                 {/* Sırala - Küçük Select */}
+                 {/* Sort - Small Select */}
                 <div className="w-1/2">
-                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Sırala</label>
+                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Sort</label>
                    <select
                     name="sortBy"
                     value={filters.sortBy}
                     onChange={handleFilterChange}
                     className="w-full px-2 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-[#004225] text-sm font-medium"
                   >
-                    <option value="date">Tarih</option>
-                    <option value="price">Fiyat</option>
+                    <option value="date">Date</option>
+                    <option value="price">Price</option>
                   </select>
                 </div>
 
@@ -184,13 +222,13 @@ const RideList = () => {
         {loading ? (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#004225]"></div>
-            <p className="text-gray-500 mt-4 font-medium">Yolculuklar taranıyor...</p>
+            <p className="text-gray-500 mt-4 font-medium">Searching for rides...</p>
           </div>
         ) : rides.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-3xl shadow-sm border border-gray-100 max-w-2xl mx-auto">
             <div className="text-6xl mb-4">🛣️</div>
-            <h3 className="text-xl font-bold text-gray-900">Henüz bir yolculuk bulunamadı.</h3>
-            <p className="text-gray-500 mt-2">Arama kriterlerini değiştirerek tekrar deneyebilirsin.</p>
+            <h3 className="text-xl font-bold text-gray-900">No rides found yet.</h3>
+            <p className="text-gray-500 mt-2">You can try again by changing your search criteria.</p>
           </div>
         ) : (
           <div className="grid gap-6 max-w-4xl mx-auto">
@@ -209,10 +247,10 @@ const RideList = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
                       <span className="bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                        {new Date(ride.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}
+                        {new Date(ride.date).toLocaleDateString('en-US', { day: 'numeric', month: 'long' })}
                       </span>
                       <span className="text-gray-400 text-sm">
-                        {new Date(ride.date).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(ride.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
 
@@ -251,13 +289,13 @@ const RideList = () => {
                       <p className="text-3xl font-bold text-[#004225]">
                         {ride.price} ₺
                       </p>
-                      <p className="text-xs text-gray-400 font-medium">yolcu başına</p>
+                      <p className="text-xs text-gray-400 font-medium">per passenger</p>
                     </div>
 
                     <div className="mt-2 md:mt-4 flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
                        <div className={`w-2 h-2 rounded-full ${ride.availableSeats > 0 ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
                        <span className="text-sm font-semibold text-emerald-800">
-                         {ride.availableSeats} koltuk boş
+                         {ride.availableSeats} seats available
                        </span>
                     </div>
 

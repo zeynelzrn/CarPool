@@ -165,7 +165,7 @@ const RideDetail = () => {
       }
     } catch (error) {
       console.error('Hata:', error);
-      setMessage({ type: 'error', text: 'Yolculuk bulunamadı' });
+      setMessage({ type: 'error', text: 'Ride not found' });
     } finally {
       setLoading(false);
     }
@@ -216,8 +216,8 @@ const RideDetail = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Yükleniyor...</div>;
-  if (!ride) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Bulunamadı</div>;
+  if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  if (!ride) return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Not Found</div>;
 
   const startPos = [ride.coordinates.startLat, ride.coordinates.startLng];
   const endPos = [ride.coordinates.endLat, ride.coordinates.endLng];
@@ -240,7 +240,7 @@ const RideDetail = () => {
             <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md mb-2">
                 {ride.origin} <span className="text-emerald-300">→</span> {ride.destination}
             </h1>
-            <p className="text-emerald-100 text-lg font-medium">Yolculuk Detayları</p>
+            <p className="text-emerald-100 text-lg font-medium">Ride Details</p>
         </div>
       </div>
 
@@ -258,11 +258,11 @@ const RideDetail = () => {
                 <div className="lg:col-span-2 p-8 border-b lg:border-b-0 lg:border-r border-gray-100">
                   <div className="flex pb-4 md:left-8 z-10">
                     <button onClick={() => navigate(-1)} className="flex items-center bg-[#004225] gap-2 text-white/80 hover:text-white transition-colors font-medium bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm">
-                        ← Geri Dön
+                        ← Go Back
                     </button>
                   </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                        <MapIcon className="w-6 h-6 text-[#004225]" /> Rota Takibi
+                        <MapIcon className="w-6 h-6 text-[#004225]" /> Route Tracking
                     </h3>
 
                     <div className="h-96 w-full rounded-2xl overflow-hidden shadow-inner border border-gray-200 relative z-0">
@@ -277,8 +277,8 @@ const RideDetail = () => {
                                 attribution='&copy; OpenStreetMap'
                             />
                             
-                            <Marker position={startPos}><Popup>Başlangıç</Popup></Marker>
-                            <Marker position={endPos}><Popup>Varış</Popup></Marker>
+                            <Marker position={startPos}><Popup>Origin</Popup></Marker>
+                            <Marker position={endPos}><Popup>Destination</Popup></Marker>
 
                             {routePath.length > 0 && (
                                 <>
@@ -292,16 +292,16 @@ const RideDetail = () => {
                     <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                             <div className="text-xs text-gray-500 font-bold uppercase mb-1 flex items-center gap-1">
-                                <CalendarIcon className="w-4 h-4" /> Tarih
+                                <CalendarIcon className="w-4 h-4" /> Date
                             </div>
-                            <div className="font-bold text-gray-900 text-lg">{new Date(ride.date).toLocaleDateString('tr-TR')}</div>
+                            <div className="font-bold text-gray-900 text-lg">{new Date(ride.date).toLocaleDateString('en-US')}</div>
                         </div>
                         
                         {/* ARAÇ BİLGİSİ */}
                         {ride.carDetails && (ride.carDetails.brand || ride.carDetails.model) && (
                              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                                 <div className="text-xs text-gray-500 font-bold uppercase mb-1 flex items-center gap-1">
-                                    <CarSolidIcon className="w-4 h-4" /> Araç
+                                    <CarSolidIcon className="w-4 h-4" /> Vehicle
                                 </div>
                                 <div className="font-bold text-gray-900 text-lg capitalize">
                                     {ride.carDetails.brand} {ride.carDetails.model}
@@ -318,12 +318,12 @@ const RideDetail = () => {
 
                 <div className="p-8 my-auto bg-gray-50/50">
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 text-center">
-                        <p className="text-sm text-gray-500 font-medium mb-1">Kişi Başı</p>
+                        <p className="text-sm text-gray-500 font-medium mb-1">Per Person</p>
                         <div className="text-4xl font-bold text-[#004225]">{ride.price} ₺</div>
                     </div>
 
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-                        <h4 className="text-xs font-bold text-gray-400 uppercase mb-4">Sürücü</h4>
+                        <h4 className="text-xs font-bold text-gray-400 uppercase mb-4">Driver</h4>
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-[#004225] font-bold text-lg">
                                 {ride.driver.username.charAt(0).toUpperCase()}
@@ -341,30 +341,30 @@ const RideDetail = () => {
                     {ride.carDetails && (ride.carDetails.brand || ride.carDetails.model) && (
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
                             <h4 className="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-2">
-                                <CarSolidIcon className="w-4 h-4" /> Araç Bilgileri
+                                <CarSolidIcon className="w-4 h-4" /> Vehicle Information
                             </h4>
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-gray-500 text-sm">Marka / Model</span>
+                                    <span className="text-gray-500 text-sm">Brand / Model</span>
                                     <span className="font-semibold text-gray-900 capitalize">
                                         {ride.carDetails.brand} {ride.carDetails.model}
                                     </span>
                                 </div>
                                 {ride.carDetails.year && (
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-500 text-sm">Yıl</span>
+                                        <span className="text-gray-500 text-sm">Year</span>
                                         <span className="font-semibold text-gray-900">{ride.carDetails.year}</span>
                                     </div>
                                 )}
                                 {ride.carDetails.color && (
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-500 text-sm">Renk</span>
+                                        <span className="text-gray-500 text-sm">Color</span>
                                         <span className="font-semibold text-gray-900 capitalize">{ride.carDetails.color}</span>
                                     </div>
                                 )}
                                 {ride.carDetails.plate && (
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-500 text-sm">Plaka</span>
+                                        <span className="text-gray-500 text-sm">License Plate</span>
                                         <span className="font-semibold text-gray-900 uppercase bg-gray-100 px-2 py-1 rounded">
                                             {ride.carDetails.plate}
                                         </span>
@@ -380,7 +380,7 @@ const RideDetail = () => {
                             disabled={bookingLoading}
                             className="w-full bg-[#004225] text-white py-4 rounded-xl hover:bg-[#00331b] shadow-lg transition-all font-bold"
                         >
-                            {bookingLoading ? 'İşleniyor...' : 'Rezervasyon Yap'}
+                            {bookingLoading ? 'Processing...' : 'Make Booking'}
                         </button>
                     )}
 
@@ -389,7 +389,7 @@ const RideDetail = () => {
                                 onClick={() => setChatOpen(true)}
                                 className="w-full bg-white text-[#004225] border-2 border-[#004225] py-3 rounded-xl hover:bg-emerald-50 transition-all font-bold mt-3"
                              >
-                                {user.role === 'driver' ? 'Mesajları Gör' : 'Mesajlaş'}
+                                {user.role === 'driver' ? 'View Messages' : 'Chat'}
                              </button>
                     )}
                 </div>

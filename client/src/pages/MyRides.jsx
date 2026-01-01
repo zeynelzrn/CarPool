@@ -25,7 +25,7 @@ const MyRides = () => {
       const data = await rideService.getMyRides();
       setRides(data);
     } catch (error) {
-      console.error('İlanlar yüklenemedi:', error);
+      console.error('Failed to load listings:', error);
     } finally {
       setLoading(false);
     }
@@ -37,7 +37,7 @@ const MyRides = () => {
       setBookings(data);
       setSelectedRide(rideId);
     } catch (error) {
-      console.error('Rezervasyonlar yüklenemedi:', error);
+      console.error('Failed to load bookings:', error);
     }
   };
 
@@ -52,7 +52,7 @@ const MyRides = () => {
   };
 
   const handleDeleteRide = async (rideId) => {
-    if (!confirm('Bu ilanı silmek istediğinizden emin misiniz?')) return;
+    if (!confirm('Are you sure you want to delete this listing?')) return;
 
     try {
       await rideService.deleteRide(rideId);
@@ -62,12 +62,12 @@ const MyRides = () => {
         setBookings([]);
       }
     } catch (error) {
-      console.error('İlan silinemedi:', error);
+      console.error('Failed to delete listing:', error);
     }
   };
 
   const handleCompleteRide = async (rideId) => {
-    if (!confirm('Bu yolculuğu tamamlandı olarak işaretlemek istediğinizden emin misiniz?')) return;
+    if (!confirm('Are you sure you want to mark this ride as completed?')) return;
 
     try {
       await rideService.completeRide(rideId);
@@ -76,8 +76,8 @@ const MyRides = () => {
         fetchBookings(rideId);
       }
     } catch (error) {
-      console.error('Yolculuk tamamlanamadı:', error);
-      alert(error.response?.data?.message || 'Yolculuk tamamlanamadı');
+      console.error('Failed to complete ride:', error);
+      alert(error.response?.data?.message || 'Failed to complete ride');
     }
   };
 
@@ -109,7 +109,7 @@ const MyRides = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#004225]"></div>
-          <p className="text-gray-500 mt-4 font-medium">İlanlarınız yükleniyor...</p>
+          <p className="text-gray-500 mt-4 font-medium">Loading your listings...</p>
         </div>
       </div>
     );
@@ -129,10 +129,10 @@ const MyRides = () => {
         <div className="absolute mt-4 inset-0  flex flex-col items-center justify-center pb-16 text-center px-4">
             <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md mb-2 flex items-center gap-3">
                <ListIcon className="w-10 h-10 text-emerald-300" />
-               İlanlarım
+               My Listings
             </h1>
             <p className="text-emerald-100 text-lg font-medium opacity-90 mb-6">
-                Yolculuklarını yönet, rezervasyonları kontrol et.
+                Manage your rides, check bookings.
             </p>
         
         </div>
@@ -144,13 +144,13 @@ const MyRides = () => {
         {rides.length === 0 ? (
           <div className="bg-white p-12 rounded-3xl shadow-xl text-center border border-gray-100 max-w-2xl mx-auto">
            
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Henüz ilan oluşturmadınız.</h3>
-            <p className="text-gray-500 mb-8">Hemen bir yolculuk planlayın ve yolcularla buluşun.</p>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">You haven't created any listings yet.</h3>
+            <p className="text-gray-500 mb-8">Plan a ride now and meet passengers.</p>
             <Link
               to="/create-ride"
               className="text-[#004225] hover:text-[#00331b] font-bold text-lg hover:underline"
             >
-              İlk ilanınızı oluşturun →
+              Create your first listing →
             </Link>
           </div>
         ) : (
@@ -161,7 +161,7 @@ const MyRides = () => {
                 <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-sm border border-gray-200 sticky top-4 z-10">
                     <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                         <CarSolidIcon className="w-6 h-6 text-[#004225]" />
-                        Yolculuklarım
+                        My Rides
                     </h2>
                 </div>
 
@@ -184,19 +184,19 @@ const MyRides = () => {
                   
                   <div className="text-gray-600 space-y-2 text-sm mb-4">
                     <p className="flex items-center gap-2">
-                        <span className="opacity-50">📅</span> {new Date(ride.date).toLocaleString('tr-TR')}
+                        <span className="opacity-50">📅</span> {new Date(ride.date).toLocaleString('en-US')}
                     </p>
                     <p className="flex items-center gap-2">
                         <span className="opacity-50">💺</span> 
                         <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-bold text-xs">
-                            {ride.availableSeats} / {ride.totalSeats} Boş
+                            {ride.availableSeats} / {ride.totalSeats} Available
                         </span>
                     </p>
                     <p className="flex items-center gap-2">
                         <span className="opacity-50">📊</span> 
-                        Durum: 
+                        Status: 
                         <span className={`capitalize font-bold ${ride.status === 'active' ? 'text-green-600' : 'text-gray-500'}`}>
-                            {ride.status === 'active' ? 'Aktif' : 'Tamamlandı'}
+                            {ride.status === 'active' ? 'Active' : 'Completed'}
                         </span>
                     </p>
                   </div>
@@ -211,7 +211,7 @@ const MyRides = () => {
                         className="text-xs bg-[#004225] text-white px-3 py-2 rounded-lg hover:bg-[#00331b] transition-all font-bold flex items-center gap-1 shadow-sm"
                       >
                         <CheckIcon className="w-3 h-3" />
-                        Tamamla
+                        Complete
                       </button>
                     )}
                     <button
@@ -222,7 +222,7 @@ const MyRides = () => {
                       className="text-xs bg-white border border-red-200 text-red-500 px-3 py-2 rounded-lg hover:bg-red-50 hover:border-red-300 transition-all font-bold flex items-center gap-1 ml-auto"
                     >
                       <TrashIcon className="w-3 h-3" />
-                      Sil
+                      Delete
                     </button>
                   </div>
                 </div>
@@ -234,7 +234,7 @@ const MyRides = () => {
                 <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-sm border border-gray-200 sticky top-4 z-10 mb-4">
                     <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                         <TicketIcon className="w-6 h-6 text-[#004225]" />
-                        Rezervasyon İstekleri
+                        Booking Requests
                     </h2>
                 </div>
 
@@ -242,7 +242,7 @@ const MyRides = () => {
                 bookings.length === 0 ? (
                   <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100 text-center">
                  
-                    <p className="text-gray-500 font-medium">Bu ilan için henüz rezervasyon isteği yok.</p>
+                    <p className="text-gray-500 font-medium">No booking requests for this listing yet.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -286,11 +286,11 @@ const MyRides = () => {
                             }`}
                           >
                             {booking.status === 'approved' ? (
-                              <> <CheckIcon className="w-3 h-3" /> Onaylandı </>
+                              <> <CheckIcon className="w-3 h-3" /> Approved </>
                             ) : booking.status === 'rejected' ? (
-                              <> <XIcon className="w-3 h-3" /> Reddedildi </>
+                              <> <XIcon className="w-3 h-3" /> Rejected </>
                             ) : (
-                              '⏳ Bekliyor'
+                              '⏳ Pending'
                             )}
                           </span>
                         </div>
@@ -303,14 +303,14 @@ const MyRides = () => {
                               className="flex-1 bg-[#004225] text-white py-2.5 rounded-xl hover:bg-[#00331b] transition-all font-bold flex items-center justify-center gap-2 shadow-sm text-sm"
                             >
                               <CheckIcon className="w-4 h-4" />
-                              Onayla
+                              Approve
                             </button>
                             <button
                               onClick={() => handleBookingStatus(booking._id, 'rejected')}
                               className="flex-1 bg-white border border-red-200 text-red-600 py-2.5 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all font-bold flex items-center justify-center gap-2 shadow-sm text-sm"
                             >
                               <XIcon className="w-4 h-4" />
-                              Reddet
+                              Reject
                             </button>
                           </div>
                         )}
@@ -325,7 +325,7 @@ const MyRides = () => {
                                   className="flex-1 bg-yellow-400 text-yellow-900 py-2 rounded-xl hover:bg-yellow-500 transition-all font-bold flex items-center justify-center gap-2 text-xs"
                                 >
                                   <StarIcon className="w-4 h-4" />
-                                  Puan Ver
+                                  Rate
                                 </button>
                               );
                             })()}
@@ -338,7 +338,7 @@ const MyRides = () => {
                               }}
                               className="flex-1 border border-[#004225] text-[#004225] py-2 rounded-xl hover:bg-emerald-50 transition-all font-bold flex items-center justify-center gap-2 text-xs"
                             >
-                              Mesajlaş
+                              Chat
                             </button>
                           </div>
                         )}
@@ -349,9 +349,9 @@ const MyRides = () => {
               ) : (
                 <div className="bg-white p-12 rounded-3xl shadow-xl text-center border border-gray-100 sticky top-20">
                   <div className="text-6xl mb-4 grayscale opacity-20">👈</div>
-                  <h3 className="text-lg font-bold text-gray-900">Bir İlan Seçin</h3>
+                  <h3 className="text-lg font-bold text-gray-900">Select a Listing</h3>
                   <p className="text-gray-500 mt-2">
-                    Rezervasyonları ve detayları görmek için soldaki listeden bir yolculuğa tıklayın.
+                    Click on a ride from the list on the left to see bookings and details.
                   </p>
                 </div>
               )}

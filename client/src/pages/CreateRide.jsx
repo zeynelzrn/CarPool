@@ -51,7 +51,7 @@ const CreateRide = () => {
       const destCoords = CITIES[formData.destination];
 
       if (!originCoords || !destCoords) {
-        setError('Lütfen geçerli şehirler seçin');
+        setError('Please select valid cities');
         setLoading(false);
         return;
       }
@@ -80,7 +80,7 @@ const CreateRide = () => {
       await rideService.createRide(rideData);
       navigate('/my-rides');
     } catch (err) {
-      setError(err.response?.data?.message || 'İlan oluşturulamadı');
+      setError(err.response?.data?.message || 'Failed to create listing');
     } finally {
       setLoading(false);
     }
@@ -101,10 +101,10 @@ const CreateRide = () => {
            
             <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md mb-2 flex items-center gap-3">
               <PlusIcon className="w-10 h-10 text-emerald-300" />   
-                Yeni Yolculuk Oluştur
+                Create New Ride
             </h1>
             <p className="text-emerald-100 text-lg font-medium opacity-90">
-                Rotanı belirle, masrafları paylaş, yeni insanlarla tanış.
+                Set your route, share costs, meet new people.
             </p>
         </div>
       </div>
@@ -125,11 +125,11 @@ const CreateRide = () => {
             {/* BÖLÜM 1: Rota Bilgileri */}
             <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <LocationIcon className="w-5 h-5 text-[#004225]" /> Rota Bilgileri
+                    <LocationIcon className="w-5 h-5 text-[#004225]" /> Route Information
                 </h3>
                 <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Nereden</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">From</label>
                     <div className="relative">
                         <select
                             name="origin"
@@ -138,7 +138,7 @@ const CreateRide = () => {
                             required
                             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all appearance-none cursor-pointer"
                         >
-                            <option value="">Şehir Seçin</option>
+                            <option value="">Select City</option>
                             {Object.keys(CITIES).map((city) => (
                             <option key={city} value={city}>{city}</option>
                             ))}
@@ -150,7 +150,7 @@ const CreateRide = () => {
                     </div>
 
                     <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Nereye</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">To</label>
                     <div className="relative">
                         <select
                             name="destination"
@@ -159,7 +159,7 @@ const CreateRide = () => {
                             required
                             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all appearance-none cursor-pointer"
                         >
-                            <option value="">Şehir Seçin</option>
+                            <option value="">Select City</option>
                             {Object.keys(CITIES).map((city) => (
                             <option key={city} value={city}>{city}</option>
                             ))}
@@ -177,11 +177,11 @@ const CreateRide = () => {
             {/* BÖLÜM 2: Detaylar */}
             <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <CalendarIcon className="w-5 h-5 text-[#004225]" /> Tarih ve Detaylar
+                    <CalendarIcon className="w-5 h-5 text-[#004225]" /> Date and Details
                 </h3>
                 <div className="grid md:grid-cols-3 gap-6">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Tarih ve Saat</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Date and Time</label>
                         <input
                             type="datetime-local"
                             name="date"
@@ -194,7 +194,7 @@ const CreateRide = () => {
 
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                            Fiyat (₺) <span className="text-xs font-normal text-gray-400">Kişi Başı</span>
+                            Price (₺) <span className="text-xs font-normal text-gray-400">Per Person</span>
                         </label>
                         <input
                             type="number"
@@ -209,7 +209,7 @@ const CreateRide = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Koltuk Sayısı</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Number of Seats</label>
                         <input
                             type="number"
                             name="totalSeats"
@@ -229,19 +229,19 @@ const CreateRide = () => {
             <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                  <CarSolidIcon className="w-5 h-5 text-[#004225]" /> 
-                 Araç Bilgileri <span className="text-xs font-normal text-gray-500 bg-white px-2 py-1 rounded-md border border-gray-200 ml-2">İsteğe Bağlı</span>
+                 Vehicle Information <span className="text-xs font-normal text-gray-500 bg-white px-2 py-1 rounded-md border border-gray-200 ml-2">Optional</span>
               </h3>
               
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Marka</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Brand</label>
                   <input
                     type="text"
                     name="carBrand"
                     value={formData.carBrand}
                     onChange={handleChange}
                     className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#004225] transition-all"
-                    placeholder="Örn: Fiat"
+                    placeholder="e.g. Fiat"
                   />
                 </div>
                 <div>
@@ -252,11 +252,11 @@ const CreateRide = () => {
                     value={formData.carModel}
                     onChange={handleChange}
                     className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#004225] transition-all"
-                    placeholder="Örn: Egea"
+                    placeholder="e.g. Egea"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Yıl</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Year</label>
                   <input
                     type="number"
                     name="carYear"
@@ -269,18 +269,18 @@ const CreateRide = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Renk</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Color</label>
                   <input
                     type="text"
                     name="carColor"
                     value={formData.carColor}
                     onChange={handleChange}
                     className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#004225] transition-all"
-                    placeholder="Beyaz"
+                    placeholder="White"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Plaka</label>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">License Plate</label>
                   <input
                     type="text"
                     name="carPlate"
@@ -305,12 +305,12 @@ const CreateRide = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span>Oluşturuluyor...</span>
+                    <span>Creating...</span>
                  </>
               ) : (
                  <>
                     <PlusIcon className="w-6 h-6" />
-                    İlanı Yayınla
+                    Publish Listing
                  </>
               )}
             </button>

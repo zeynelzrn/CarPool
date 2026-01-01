@@ -20,7 +20,7 @@ const MyBookings = () => {
       const data = await bookingService.getMyBookings();
       setBookings(data || []);
     } catch (error) {
-      console.error('Rezervasyonlar yüklenemedi:', error);
+      console.error('Failed to load bookings:', error);
       setBookings([]);
     } finally {
       setLoading(false);
@@ -28,13 +28,13 @@ const MyBookings = () => {
   };
 
   const handleCancelBooking = async (bookingId) => {
-    if (!confirm('Bu rezervasyonu iptal etmek istediğinizden emin misiniz?')) return;
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
 
     try {
       await bookingService.deleteBooking(bookingId);
       fetchMyBookings();
     } catch (error) {
-      console.error('Rezervasyon iptal edilemedi:', error);
+      console.error('Failed to cancel booking:', error);
     }
   };
 
@@ -55,7 +55,7 @@ const MyBookings = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#004225]"></div>
-          <p className="text-gray-500 mt-4 font-medium">Rezervasyonlarınız yükleniyor...</p>
+          <p className="text-gray-500 mt-4 font-medium">Loading your bookings...</p>
         </div>
       </div>
     );
@@ -75,10 +75,10 @@ const MyBookings = () => {
         <div className="absolute inset-0 flex flex-col items-center justify-center pb-16 text-center px-4">
             <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md mb-2 flex items-center gap-3">
                <TicketIcon className="w-10 h-10 text-emerald-300" />
-               Rezervasyonlarım
+               My Bookings
             </h1>
             <p className="text-emerald-100 text-lg font-medium opacity-90 mb-6">
-                Planladığın tüm seyahatler burada.
+                All your planned trips are here.
             </p>
             
             <Link
@@ -86,7 +86,7 @@ const MyBookings = () => {
                 className="bg-white text-[#004225] px-8 py-3 rounded-xl hover:bg-emerald-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-bold flex items-center gap-2"
             >
                 <SearchIcon className="w-5 h-5" />
-                Yeni Yolculuk Ara
+                Find New Ride
             </Link>
         </div>
       </div>
@@ -96,13 +96,13 @@ const MyBookings = () => {
         
         {bookings.length === 0 ? (
           <div className="bg-white p-12 rounded-3xl shadow-xl text-center border border-gray-100">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Henüz bir rezervasyonunuz yok.</h3>
-            <p className="text-gray-500 mb-8">Yeni yerler keşfetmek için harika bir gün!</p>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">You don't have any bookings yet.</h3>
+            <p className="text-gray-500 mb-8">Great day to explore new places!</p>
             <Link
               to="/rides"
               className="text-[#004225] hover:text-[#00331b] font-bold text-lg hover:underline"
             >
-              Yolculuk aramaya başlayın →
+              Start searching for rides →
             </Link>
           </div>
         ) : (
@@ -137,7 +137,7 @@ const MyBookings = () => {
                                 <div className="text-xs">
                                     <RatingDisplay
                                         userId={booking.ride.driver._id}
-                                        userName={booking.ride.driver.username || 'Sürücü'}
+                                        userName={booking.ride.driver.username || 'Driver'}
                                         compact={true}
                                     />
                                 </div>
@@ -151,7 +151,7 @@ const MyBookings = () => {
                                 <p className="flex items-center gap-2">
                                 <CalendarIcon className="w-4 h-4 text-gray-400" />
                                 <span className="font-semibold text-gray-900">
-                                    {new Date(booking.ride.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                                    {new Date(booking.ride.date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
                                 </span>
                                 </p>
                             )}
@@ -169,7 +169,7 @@ const MyBookings = () => {
 
                     {/* Sağ: Durum Etiketi */}
                     <div className="flex flex-col items-end gap-2">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Rezervasyon Durumu</span>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Booking Status</span>
                         <span
                             className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 border ${
                             booking.status === 'approved'
@@ -180,11 +180,11 @@ const MyBookings = () => {
                             }`}
                         >
                             {booking.status === 'approved' ? (
-                            <> <CheckIcon className="w-4 h-4" /> Onaylandı </>
+                            <> <CheckIcon className="w-4 h-4" /> Approved </>
                             ) : booking.status === 'rejected' ? (
-                            <> <XIcon className="w-4 h-4" /> Reddedildi </>
+                            <> <XIcon className="w-4 h-4" /> Rejected </>
                             ) : (
-                            'Bekliyor'
+                            'Pending'
                             )}
                         </span>
 
@@ -195,9 +195,9 @@ const MyBookings = () => {
                                 : booking.ride.status === 'cancelled' ? 'bg-red-50 text-red-500 border-red-100'
                                 : 'bg-blue-50 text-blue-500 border-blue-100'
                             }`}>
-                                {booking.ride.status === 'completed' ? 'Yolculuk Tamamlandı' 
-                                : booking.ride.status === 'cancelled' ? 'Yolculuk İptal' 
-                                : 'Yolculuk Aktif'}
+                                {booking.ride.status === 'completed' ? 'Ride Completed' 
+                                : booking.ride.status === 'cancelled' ? 'Ride Cancelled' 
+                                : 'Ride Active'}
                             </span>
                         )}
                     </div>
@@ -213,7 +213,7 @@ const MyBookings = () => {
                         className="bg-[#004225] text-white px-5 py-2.5 rounded-xl hover:bg-[#00331b] transition-all shadow-sm hover:shadow-md font-bold text-sm flex items-center gap-2"
                       >
                         <EyeIcon className="w-4 h-4" />
-                        Detaylar
+                        Details
                       </Link>
                     )}
 
@@ -224,7 +224,7 @@ const MyBookings = () => {
                         className="bg-yellow-400 text-yellow-900 px-5 py-2.5 rounded-xl hover:bg-yellow-500 transition-all shadow-sm hover:shadow-md font-bold text-sm flex items-center gap-2"
                       >
                         <StarIcon className="w-4 h-4" />
-                        Sürücüyü Değerlendir
+                        Rate Driver
                       </button>
                     )}
 
@@ -235,7 +235,7 @@ const MyBookings = () => {
                         className="bg-white border border-red-200 text-red-600 px-5 py-2.5 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all font-bold text-sm flex items-center gap-2 ml-auto"
                       >
                         <TrashIcon className="w-4 h-4" />
-                        İptal Et
+                        Cancel
                       </button>
                     )}
                   </div>

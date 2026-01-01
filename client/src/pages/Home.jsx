@@ -28,8 +28,8 @@ const Home = () => {
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pb-32">
             
             <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight drop-shadow-lg max-w-4xl leading-tight">
-              Yolculuklar, <br/>
-              <span className="text-emerald-300">Paylaştıkça Güzel.</span>
+              Journeys, <br/>
+              <span className="text-emerald-300">Better When Shared.</span>
             </h1>
           </div>
         </div>
@@ -41,9 +41,9 @@ const Home = () => {
             {/* Karşılama Başlığı (Siyah/Koyu Gri - Okunabilir) */}
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                {isAuthenticated ? `Hoş geldin, ${user.username}` : 'Nasıl seyahat etmek istersin?'}
+                {isAuthenticated ? `Welcome, ${user.username}` : 'How would you like to travel?'}
               </h2>
-              <p className="text-gray-500 text-lg">Güvenli, hızlı ve ekonomik yolculuklar için doğru yerdesin.</p>
+              <p className="text-gray-500 text-lg">You're in the right place for safe, fast and economical journeys.</p>
             </div>
 
             {/* İŞLEM BUTONLARI */}
@@ -59,8 +59,8 @@ const Home = () => {
                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                   </span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-[#004225] transition-colors">Yolculuk Ara</h3>
-                <p className="text-gray-500 font-medium">Gitmek istediğin yeri bul, hemen rezervasyon yap.</p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-[#004225] transition-colors">Find a Ride</h3>
+                <p className="text-gray-500 font-medium">Find where you want to go and book immediately.</p>
               </Link>
 
               {/* Sağ Kart: İlan Ver / Kayıt Ol */}
@@ -87,18 +87,18 @@ const Home = () => {
 
   <h3 className="text-2xl font-bold text-white mb-2 relative z-10">
     {!isAuthenticated 
-      ? 'Aramıza Katıl' 
+      ? 'Join Us' 
       : user.role === 'driver' 
-        ? 'İlan Oluştur' 
-        : 'Rezervasyonlarım'}
+        ? 'Create Listing' 
+        : 'My Bookings'}
   </h3>
 
   <p className="text-emerald-100 font-medium relative z-10">
     {!isAuthenticated 
-      ? 'Sürücü veya yolcu ol, topluluğun bir parçası ol.' 
+      ? 'Be a driver or passenger, become part of the community.' 
       : user.role === 'driver' 
-        ? 'Yeni bir rota belirle ve yolcularını bekle.' 
-        : 'Mevcut seyahatlerini görüntüle ve yönet.'}
+        ? 'Set a new route and wait for your passengers.' 
+        : 'View and manage your current trips.'}
   </p>
 </Link>
 
@@ -106,9 +106,9 @@ const Home = () => {
 
             {/* Alt Bilgi */}
             <div className="mt-8 pt-8 border-t border-gray-100 flex flex-wrap justify-center gap-8 text-gray-500 font-medium text-sm">
-              <span className="flex items-center gap-2"><span className="text-green-500">✓</span> Doğrulanmış Profil</span>
-              <span className="flex items-center gap-2"><span className="text-green-500">✓</span> 7/24 Destek</span>
-              <span className="flex items-center gap-2"><span className="text-green-500">✓</span> Güvenli Ödeme</span>
+              <span className="flex items-center gap-2"><span className="text-green-500">✓</span> Verified Profile</span>
+              <span className="flex items-center gap-2"><span className="text-green-500">✓</span> 24/7 Support</span>
+              <span className="flex items-center gap-2"><span className="text-green-500">✓</span> Secure Payment</span>
             </div>
 
           </div>
@@ -118,15 +118,15 @@ const Home = () => {
       {/* --- NEDEN BİZ (Clean Layout) --- */}
       <div className="container mx-auto px-6 pb-24">
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Neden CarPool?</h2>
-          <p className="text-gray-600">Binlerce kullanıcı her gün işe, okula veya tatile giderken bizi tercih ediyor.</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Why CarPool?</h2>
+          <p className="text-gray-600">Thousands of users choose us every day when going to work, school or vacation.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: "🛡️", title: "Güvenli Seyahat", desc: "Tüm üyelerimiz kimlik doğrulamasından geçer." },
-              { icon: "💰", title: "Cebine Dost", desc: "Yol masraflarını paylaşarak tasarruf et." },
-              { icon: "⚡", title: "Hızlı & Pratik", desc: "Saniyeler içinde sana uygun aracı bul." }
+              { icon: "🛡️", title: "Safe Travel", desc: "All our members go through identity verification." },
+              { icon: "💰", title: "Budget Friendly", desc: "Save by sharing travel costs." },
+              { icon: "⚡", title: "Fast & Practical", desc: "Find the right vehicle for you in seconds." }
             ].map((item, index) => (
               <div key={index} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow">
                 <div className="text-4xl mb-4">{item.icon}</div>

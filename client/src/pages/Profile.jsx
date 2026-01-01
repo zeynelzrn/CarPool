@@ -29,7 +29,7 @@ const Profile = () => {
       const userData = await authService.getUserById(userId);
       setProfileUser(userData);
     } catch (error) {
-      console.error('Kullanıcı bilgisi yüklenemedi:', error);
+      console.error('Failed to load user information:', error);
       setProfileUser(null);
     }
   };
@@ -41,7 +41,7 @@ const Profile = () => {
       setAverageRating(data?.averageRating || 0);
       setTotalRatings(data?.totalRatings || 0);
     } catch (error) {
-      console.error('Değerlendirmeler yüklenemedi:', error);
+      console.error('Failed to load ratings:', error);
       setRatings([]);
       setAverageRating(0);
       setTotalRatings(0);
@@ -77,7 +77,7 @@ const Profile = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#004225]"></div>
-          <p className="text-gray-500 mt-4 font-medium">Profil Yükleniyor...</p>
+          <p className="text-gray-500 mt-4 font-medium">Loading profile...</p>
         </div>
       </div>
     );
@@ -89,10 +89,10 @@ const Profile = () => {
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         <div className="bg-white p-8 rounded-3xl shadow-lg text-center max-w-md">
           <div className="text-6xl mb-4">😕</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Kullanıcı Bulunamadı</h2>
-          <p className="text-gray-500 mb-6">Aradığınız profil mevcut değil veya kaldırılmış olabilir.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">User Not Found</h2>
+          <p className="text-gray-500 mb-6">The profile you are looking for does not exist or has been removed.</p>
           <Link to="/" className="inline-block bg-[#004225] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#00331b] transition-colors">
-            Ana Sayfaya Dön
+            Back to Home
           </Link>
         </div>
       </div>
@@ -125,7 +125,7 @@ const Profile = () => {
                     {profileUser?.profilePicture ? (
                         <img
                             src={profileUser.profilePicture}
-                            alt="Profil"
+                            alt="Profile"
                             className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg ring-4 ring-[#004225]/10"
                         />
                     ) : (
@@ -134,20 +134,20 @@ const Profile = () => {
                         </div>
                     )}
                     {/* Verified Badge (Opsiyonel) */}
-                    <div className="absolute bottom-2 right-2 bg-blue-500 text-white p-1 rounded-full border-2 border-white shadow-sm" title="Doğrulanmış Hesap">
+                    <div className="absolute bottom-2 right-2 bg-blue-500 text-white p-1 rounded-full border-2 border-white shadow-sm" title="Verified Account">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                     </div>
                 </div>
 
                 {/* İsim ve Bio */}
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                    {profileUser?.username || 'Kullanıcı'}
+                    {profileUser?.username || 'User'}
                 </h1>
                 
                 {profileUser?.bio ? (
                     <p className="text-gray-600 max-w-2xl mx-auto text-lg mb-4">{profileUser.bio}</p>
                 ) : (
-                    <p className="text-gray-400 italic mb-4">Henüz bir biyografi eklenmemiş.</p>
+                    <p className="text-gray-400 italic mb-4">No biography added yet.</p>
                 )}
 
                 {/* İletişim Bilgisi (Sadece varsa) */}
@@ -166,13 +166,13 @@ const Profile = () => {
                             <div className="flex items-center justify-center gap-1 mt-1 text-yellow-400">
                                 {renderStars(Math.round(averageRating))}
                             </div>
-                            <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-2">Ortalama Puan</div>
+                            <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-2">Average Rating</div>
                         </div>
                         <div className="w-px h-16 bg-gray-200"></div>
                         <div className="text-center">
                             <div className="text-4xl font-bold text-[#004225]">{totalRatings}</div>
                             
-                            <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-2">Değerlendirme</div>
+                            <div className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-2">Ratings</div>
                         </div>
                     </div>
                 )}
@@ -185,7 +185,7 @@ const Profile = () => {
                             className="inline-flex items-center gap-2 bg-[#004225] text-white px-8 py-3 rounded-xl hover:bg-[#00331b] hover:shadow-lg transition-all transform active:scale-95 font-bold"
                         >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            Profili Düzenle
+                            Edit Profile
                         </Link>
                     </div>
                 )}
@@ -198,12 +198,12 @@ const Profile = () => {
                 <div className="p-2 bg-yellow-100 rounded-lg">
                     <StarIcon className="w-6 h-6 text-yellow-600" />
                 </div>
-                Değerlendirmeler
+                Ratings
             </h2>
 
             {ratings.length === 0 ? (
                 <div className="bg-white rounded-2xl p-8 text-center border border-gray-100 shadow-sm">
-                    <p className="text-gray-500 text-lg">Bu kullanıcı için henüz değerlendirme yapılmamış.</p>
+                    <p className="text-gray-500 text-lg">No ratings have been made for this user yet.</p>
                 </div>
             ) : (
                 <div className="grid gap-4">
@@ -220,10 +220,10 @@ const Profile = () => {
                                     </div>
                                     <div>
                                         <p className="font-bold text-gray-900">
-                                            {rating.fromUser?.username || 'Gizli Kullanıcı'}
+                                            {rating.fromUser?.username || 'Anonymous User'}
                                         </p>
                                         <p className="text-xs text-gray-400">
-                                            {rating.createdAt ? new Date(rating.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}
+                                            {rating.createdAt ? new Date(rating.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}
                                         </p>
                                     </div>
                                 </div>

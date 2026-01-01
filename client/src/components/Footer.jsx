@@ -18,34 +18,34 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-emerald-100/80 text-sm leading-relaxed">
-              Yolculuklarını paylaş, masrafları azalt,
-              yeni insanlarla tanış. Sürdürülebilir
-              ulaşımın parçası ol.
+              Share your journeys, reduce costs,
+              meet new people. Be part of sustainable
+              transportation.
             </p>
           </div>
 
           {/* Orta: Hızlı Linkler */}
           <div className="text-center">
-            <h3 className="text-lg font-bold mb-4 text-white">Hızlı Linkler</h3>
+            <h3 className="text-lg font-bold mb-4 text-white">Quick Links</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/" className="text-emerald-100/80 hover:text-white transition-colors text-sm">
-                  Ana Sayfa
+                  Home
                 </Link>
               </li>
               <li>
                 <Link to="/rides" className="text-emerald-100/80 hover:text-white transition-colors text-sm">
-                  Yolculuklar
+                  Rides
                 </Link>
               </li>
               <li>
                 <Link to="/login" className="text-emerald-100/80 hover:text-white transition-colors text-sm">
-                  Giriş Yap
+                  Sign In
                 </Link>
               </li>
               <li>
                 <Link to="/register" className="text-emerald-100/80 hover:text-white transition-colors text-sm">
-                  Kayıt Ol
+                  Sign Up
                 </Link>
               </li>
             </ul>
@@ -53,7 +53,7 @@ const Footer = () => {
 
           {/* Sağ: Sosyal Medya */}
           <div className="text-center md:text-right">
-            <h3 className="text-lg font-bold mb-4 text-white">Bizi Takip Edin</h3>
+            <h3 className="text-lg font-bold mb-4 text-white">Follow Us</h3>
             <div className="flex justify-center md:justify-end gap-4 mb-4">
               {/* Twitter/X */}
               <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
@@ -83,7 +83,7 @@ const Footer = () => {
         {/* Alt Kısım: Telif Hakkı */}
         <div className="border-t border-white/10 mt-8 pt-8 text-center">
           <p className="text-emerald-100/60 text-sm">
-            © 2025 CarPool. Tüm hakları saklıdır.
+            © 2025 CarPool. All rights reserved.
           </p>
           <p className="text-emerald-100/40 text-xs mt-2">
             SE 3355 – Final Project

@@ -1,6 +1,7 @@
 const Message = require('../models/Message');
 const Ride = require('../models/Ride');
 const Booking = require('../models/Booking');
+const { getIO } = require('../socket/socketServer');
 
 // @desc    Mesaj gönder
 // @route   POST /api/messages
@@ -54,6 +55,12 @@ const sendMessage = async (req, res) => {
       .populate('sender', 'username profilePicture')
       .populate('receiver', 'username profilePicture')
       .populate('ride', 'origin destination');
+
+    // Socket.io ile alıcıya real-time mesaj gönder
+    const io = getIO();
+    io.to(`user_${receiverId.toString()}`).emit('new-message', populatedMessage);
+    // Ride room'una da gönder
+    io.to(`ride_${rideId.toString()}`).emit('new-message', populatedMessage);
 
     res.status(201).json(populatedMessage);
   } catch (error) {

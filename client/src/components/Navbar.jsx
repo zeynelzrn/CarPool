@@ -64,7 +64,7 @@ const Navbar = () => {
         <button
           className="md:hidden text-white p-2 focus:outline-none z-50"
           onClick={() => setIsOpen(!isOpen)}
-          aria-label="Menüyü aç/kapat"
+          aria-label="Toggle menu"
         >
           {isOpen ? (
             <FaTimes className="w-6 h-6" />
@@ -82,11 +82,11 @@ const Navbar = () => {
                  <>
                    <Link to="/create-ride" className="hover:text-emerald-200 transition-colors font-medium flex items-center gap-1.5">
                      <PlusIcon className="w-4 h-4" />
-                     <span>İlan Oluştur</span>
+                     <span>Create Listing</span>
                    </Link>
                    <Link to="/my-rides" className="hover:text-emerald-200 transition-colors font-medium flex items-center gap-1.5">
                      <ListIcon className="w-4 h-4" />
-                     <span>İlanlarım</span>
+                     <span>My Listings</span>
                    </Link>
                  </>
                )}
@@ -96,11 +96,11 @@ const Navbar = () => {
                  <>
                    <Link to="/rides" className="hover:text-emerald-200 transition-colors font-medium flex items-center gap-1.5">
                      <SearchIcon className="w-4 h-4" />
-                     <span>Yolculuk Ara</span>
+                     <span>Find a Ride</span>
                    </Link>
                    <Link to="/my-bookings" className="hover:text-emerald-200 transition-colors font-medium flex items-center gap-1.5">
                      <TicketIcon className="w-4 h-4" />
-                     <span>Rezervasyonlarım</span>
+                     <span>My Bookings</span>
                    </Link>
                  </>
                )}
@@ -116,7 +116,7 @@ const Navbar = () => {
                      {user.username}
                    </span>
                    <span className="text-xs bg-emerald-500/80 text-white px-2 py-0.5 rounded-full border border-emerald-400/50">
-                     {user.role === 'driver' ? 'Sürücü' : 'Yolcu'}
+                     {user.role === 'driver' ? 'Driver' : 'Passenger'}
                    </span>
                  </Link>
 
@@ -124,7 +124,7 @@ const Navbar = () => {
                    onClick={handleLogout}
                    className="bg-white/10 hover:bg-red-500/80 hover:text-white text-red-100 px-4 py-2 rounded-lg transition-all font-medium text-sm backdrop-blur-sm"
                  >
-                   Çıkış
+                   Logout
                  </button>
                </div>
              </>
@@ -132,21 +132,21 @@ const Navbar = () => {
              <>
                {/* GUEST MENÜSÜ */}
                <Link to="/rides" className="hover:text-emerald-200 transition-colors font-medium">
-                 Yolculuklar
+                 Rides
                </Link>
 
                <Link
                  to="/login"
                  className="text-white hover:text-emerald-200 font-medium transition-colors"
                >
-                 Giriş Yap
+                 Sign In
                </Link>
 
                <Link
                  to="/register"
                  className="bg-white text-[#004225] px-5 py-2.5 rounded-xl hover:bg-emerald-50 transition-all hover:shadow-lg font-bold flex items-center gap-2"
                >
-                 Kayıt Ol
+                 Sign Up
                </Link>
              </>
            )}
@@ -181,7 +181,7 @@ const Navbar = () => {
                 </div>
                 <p className="text-white font-semibold text-xl">{user.username}</p>
                 <span className="text-sm bg-emerald-500/80 text-white px-3 py-1 rounded-full mt-2">
-                  {user.role === 'driver' ? 'Sürücü' : 'Yolcu'}
+                  {user.role === 'driver' ? 'Driver' : 'Passenger'}
                 </span>
               </div>
 
@@ -197,7 +197,7 @@ const Navbar = () => {
                       className="flex items-center gap-3 text-white text-2xl font-medium hover:text-emerald-300 transition-colors"
                     >
                       <PlusIcon className="w-7 h-7" />
-                      <span>İlan Oluştur</span>
+                      <span>Create Listing</span>
                     </Link>
                     <Link
                       to="/my-rides"
@@ -205,7 +205,7 @@ const Navbar = () => {
                       className="flex items-center gap-3 text-white text-2xl font-medium hover:text-emerald-300 transition-colors"
                     >
                       <ListIcon className="w-7 h-7" />
-                      <span>İlanlarım</span>
+                      <span>My Listings</span>
                     </Link>
                   </>
                 )}
@@ -218,7 +218,7 @@ const Navbar = () => {
                       className="flex items-center gap-3 text-white text-2xl font-medium hover:text-emerald-300 transition-colors"
                     >
                       <SearchIcon className="w-7 h-7" />
-                      <span>Yolculuk Ara</span>
+                      <span>Find a Ride</span>
                     </Link>
                     <Link
                       to="/my-bookings"
@@ -226,7 +226,7 @@ const Navbar = () => {
                       className="flex items-center gap-3 text-white text-2xl font-medium hover:text-emerald-300 transition-colors"
                     >
                       <TicketIcon className="w-7 h-7" />
-                      <span>Rezervasyonlarım</span>
+                      <span>My Bookings</span>
                     </Link>
                   </>
                 )}
@@ -237,7 +237,7 @@ const Navbar = () => {
                   className="flex items-center gap-3 text-white text-2xl font-medium hover:text-emerald-300 transition-colors"
                 >
                   <UserIcon className="w-7 h-7" />
-                  <span>Profilim</span>
+                  <span>My Profile</span>
                 </Link>
 
                 {/* Ayırıcı Çizgi */}
@@ -251,7 +251,7 @@ const Navbar = () => {
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  <span>Çıkış Yap</span>
+                  <span>Logout</span>
                 </button>
               </nav>
             </>
@@ -267,7 +267,7 @@ const Navbar = () => {
                   className="flex items-center gap-3 text-white text-2xl font-medium hover:text-emerald-300 transition-colors"
                 >
                   <SearchIcon className="w-7 h-7" />
-                  <span>Yolculuklar</span>
+                  <span>Rides</span>
                 </Link>
 
                 {/* Ayırıcı Çizgi */}
@@ -278,7 +278,7 @@ const Navbar = () => {
                   onClick={closeMenu}
                   className="text-white text-2xl font-medium hover:text-emerald-300 transition-colors"
                 >
-                  Giriş Yap
+                  Sign In
                 </Link>
 
                 <Link
@@ -286,7 +286,7 @@ const Navbar = () => {
                   onClick={closeMenu}
                   className="bg-white text-[#004225] text-xl font-bold px-8 py-4 rounded-2xl hover:bg-emerald-50 transition-all shadow-lg"
                 >
-                  Kayıt Ol
+                  Sign Up
                 </Link>
               </nav>
             </>

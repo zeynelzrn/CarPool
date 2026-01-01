@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { messageService } from '../services/messageService';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { UserIcon, XIcon } from './Icons';
 
 const ChatModal = ({ isOpen, onClose, ride, otherUser: initialOtherUser }) => {
   const { user } = useAuth();
+  const { socket, joinRideRoom } = useSocket();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,22 +14,91 @@ const ChatModal = ({ isOpen, onClose, ride, otherUser: initialOtherUser }) => {
   const [otherUser, setOtherUser] = useState(initialOtherUser);
   const messagesEndRef = useRef(null);
 
+  // otherUser'ı ayarla ve mesajları yükle
   useEffect(() => {
     if (isOpen && ride) {
-      // otherUser'ı ayarla
-      if (initialOtherUser) {
+      let currentOtherUser = initialOtherUser;
+      
+      if (!currentOtherUser && user.role === 'passenger' && ride.driver) {
+        currentOtherUser = ride.driver;
+        setOtherUser(currentOtherUser);
+      } else if (initialOtherUser) {
         setOtherUser(initialOtherUser);
-      } else if (user.role === 'passenger' && ride.driver) {
-        setOtherUser(ride.driver);
       }
-      fetchMessages();
-      // Her 5 saniyede bir mesajları güncelle
-      const interval = setInterval(() => {
-        fetchMessages();
-      }, 5000);
-      return () => clearInterval(interval);
+      
+      // Ride room'una katıl
+      if (socket && ride._id) {
+        joinRideRoom(ride._id);
+      }
     }
-  }, [isOpen, ride?._id, initialOtherUser, user.role]);
+  }, [isOpen, initialOtherUser, ride, user.role, socket, joinRideRoom]);
+
+  // Mesajları yükle
+  useEffect(() => {
+    if (isOpen && ride && ride._id) {
+      const loadMessages = async () => {
+        try {
+          setLoading(true);
+          const passengerId = user.role === 'driver' && otherUser?._id ? otherUser._id : null;
+          const data = await messageService.getMessagesByRide(ride._id, passengerId);
+          setMessages(data || []);
+          
+          // Eğer otherUser yoksa, mesajlardan bul
+          if (!otherUser && data && data.length > 0) {
+            const firstMessage = data[0];
+            const other = firstMessage.sender._id === user._id 
+              ? firstMessage.receiver 
+              : firstMessage.sender;
+            setOtherUser(other);
+          }
+        } catch (error) {
+          console.error('Failed to load messages:', error);
+          setMessages([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      loadMessages();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, ride?._id, otherUser?._id, user.role, user._id]);
+
+  // Socket event listener'ı ayarla
+  useEffect(() => {
+    if (isOpen && ride && socket && ride._id) {
+      const handleNewMessage = (message) => {
+        // Bu mesaj bu sohbet için mi kontrol et
+        const messageRideId = typeof message.ride === 'object' ? message.ride._id?.toString() : message.ride?.toString();
+        const rideIdStr = ride._id?.toString();
+        
+        if (messageRideId === rideIdStr) {
+          const currentOtherUserId = otherUser?._id?.toString() || (user.role === 'passenger' ? ride.driver?._id?.toString() : null);
+          const senderId = typeof message.sender === 'object' ? message.sender._id?.toString() : message.sender?.toString();
+          const receiverId = typeof message.receiver === 'object' ? message.receiver._id?.toString() : message.receiver?.toString();
+          const userIdStr = user._id?.toString();
+          
+          // Mesaj bize gönderildiyse veya biz gönderdiysek
+          if ((senderId === currentOtherUserId && receiverId === userIdStr) || 
+              (senderId === userIdStr && receiverId === currentOtherUserId)) {
+            setMessages(prev => {
+              // Mesaj zaten var mı kontrol et (duplicate prevention)
+              const exists = prev.some(m => m._id === message._id);
+              if (exists) return prev;
+              return [...prev, message];
+            });
+          }
+        }
+      };
+
+      socket.on('new-message', handleNewMessage);
+
+      return () => {
+        socket.off('new-message', handleNewMessage);
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, ride?._id, socket, user._id, user.role, otherUser?._id]);
 
   useEffect(() => {
     scrollToBottom();
@@ -37,31 +108,6 @@ const ChatModal = ({ isOpen, onClose, ride, otherUser: initialOtherUser }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const fetchMessages = async () => {
-    try {
-      const passengerId = user.role === 'driver' && otherUser?._id ? otherUser._id : null;
-      const data = await messageService.getMessagesByRide(ride._id, passengerId);
-      setMessages(data || []);
-      
-      if (!otherUser) {
-        if (data && data.length > 0) {
-          const firstMessage = data[0];
-          const other = firstMessage.sender._id === user._id 
-            ? firstMessage.receiver 
-            : firstMessage.sender;
-          setOtherUser(other);
-        } else if (ride.driver) {
-          if (user.role === 'passenger') {
-            setOtherUser(ride.driver);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Mesajlar yüklenemedi:', error);
-      setMessages([]);
-    }
-  };
-
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
@@ -69,24 +115,29 @@ const ChatModal = ({ isOpen, onClose, ride, otherUser: initialOtherUser }) => {
     const receiverId = otherUser?._id || (user.role === 'passenger' ? ride.driver?._id : null);
     
     if (!receiverId) {
-      alert('Alıcı bulunamadı');
+      alert('Receiver not found');
       return;
     }
 
     setSending(true);
     try {
-      await messageService.sendMessage({
+      const sentMessage = await messageService.sendMessage({
         receiverId: receiverId,
         rideId: ride._id,
         content: newMessage.trim()
       });
+      
+      // Mesajı local state'e ekle (optimistic update)
+      setMessages(prev => {
+        const exists = prev.some(m => m._id === sentMessage._id);
+        if (exists) return prev;
+        return [...prev, sentMessage];
+      });
+      
       setNewMessage('');
-      setTimeout(() => {
-        fetchMessages();
-      }, 500);
     } catch (error) {
-      console.error('Mesaj gönderilemedi:', error);
-      alert(error.response?.data?.message || 'Mesaj gönderilemedi');
+      console.error('Failed to send message:', error);
+      alert(error.response?.data?.message || 'Failed to send message');
     } finally {
       setSending(false);
     }
@@ -114,7 +165,7 @@ const ChatModal = ({ isOpen, onClose, ride, otherUser: initialOtherUser }) => {
             )}
             <div>
               <h3 className="font-bold text-lg leading-tight">
-                {otherUser?.username || (user.role === 'passenger' ? ride.driver?.username : 'Sohbet')}
+                {otherUser?.username || (user.role === 'passenger' ? ride.driver?.username : 'Chat')}
               </h3>
               <p className="text-xs text-emerald-200 font-medium">
                 {ride.origin} → {ride.destination}
@@ -134,7 +185,7 @@ const ChatModal = ({ isOpen, onClose, ride, otherUser: initialOtherUser }) => {
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-60">
                 
-                <p>Henüz mesaj yok. İlk mesajı gönder!</p>
+                <p>No messages yet. Send the first message!</p>
             </div>
           ) : (
             messages.map((message) => {
@@ -162,7 +213,7 @@ const ChatModal = ({ isOpen, onClose, ride, otherUser: initialOtherUser }) => {
                         isOwn ? 'text-emerald-200' : 'text-gray-400'
                       }`}
                     >
-                      {new Date(message.createdAt).toLocaleTimeString('tr-TR', {
+                      {new Date(message.createdAt).toLocaleTimeString('en-US', {
                         hour: '2-digit',
                         minute: '2-digit'
                       })}
@@ -182,7 +233,7 @@ const ChatModal = ({ isOpen, onClose, ride, otherUser: initialOtherUser }) => {
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Mesajınızı yazın..."
+              placeholder="Type your message..."
               className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
               disabled={sending || (!otherUser && user.role !== 'passenger')}
             />
