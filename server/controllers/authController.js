@@ -130,7 +130,7 @@ const updateProfile = async (req, res) => {
 const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).select('-password');
-    
+
     if (!user) {
       return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
     }

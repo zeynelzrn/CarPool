@@ -41,8 +41,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Kullanıcı bilgilerini güncelle (profil düzenleme sonrası için)
+  const updateUser = (userData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
   const value = {
     user,
+    setUser: updateUser,
     login,
     register,
     logout,

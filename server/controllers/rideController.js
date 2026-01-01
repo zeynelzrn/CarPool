@@ -5,7 +5,7 @@ const Ride = require('../models/Ride');
 // @access  Private (Driver only)
 const createRide = async (req, res) => {
   try {
-    const { origin, destination, date, price, totalSeats, coordinates } = req.body;
+    const { origin, destination, date, price, totalSeats, coordinates, carDetails } = req.body;
 
     const ride = await Ride.create({
       driver: req.user._id,
@@ -15,7 +15,8 @@ const createRide = async (req, res) => {
       price,
       totalSeats,
       availableSeats: totalSeats,
-      coordinates
+      coordinates,
+      carDetails
     });
 
     res.status(201).json(ride);

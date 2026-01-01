@@ -297,18 +297,18 @@ const RideDetail = () => {
                             <div className="font-bold text-gray-900 text-lg">{new Date(ride.date).toLocaleDateString('tr-TR')}</div>
                         </div>
                         
-                        {/* ARAÇ BİLGİSİ - GÜNCELLENDİ */}
-                        {ride.carInfo && (ride.carInfo.brand || ride.carInfo.model) && (
+                        {/* ARAÇ BİLGİSİ */}
+                        {ride.carDetails && (ride.carDetails.brand || ride.carDetails.model) && (
                              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                                 <div className="text-xs text-gray-500 font-bold uppercase mb-1 flex items-center gap-1">
                                     <CarSolidIcon className="w-4 h-4" /> Araç
                                 </div>
                                 <div className="font-bold text-gray-900 text-lg capitalize">
-                                    {ride.carInfo.brand} {ride.carInfo.model}
+                                    {ride.carDetails.brand} {ride.carDetails.model}
                                 </div>
-                                {(ride.carInfo.color || ride.carInfo.year) && (
+                                {(ride.carDetails.color || ride.carDetails.year) && (
                                     <div className="text-sm text-gray-500 mt-1 capitalize">
-                                        {ride.carInfo.color} {ride.carInfo.year ? `• ${ride.carInfo.year}` : ''}
+                                        {ride.carDetails.color} {ride.carDetails.year ? `• ${ride.carDetails.year}` : ''}
                                     </div>
                                 )}
                             </div>
@@ -336,6 +336,43 @@ const RideDetail = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* ARAÇ BİLGİLERİ KARTI */}
+                    {ride.carDetails && (ride.carDetails.brand || ride.carDetails.model) && (
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-2">
+                                <CarSolidIcon className="w-4 h-4" /> Araç Bilgileri
+                            </h4>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-500 text-sm">Marka / Model</span>
+                                    <span className="font-semibold text-gray-900 capitalize">
+                                        {ride.carDetails.brand} {ride.carDetails.model}
+                                    </span>
+                                </div>
+                                {ride.carDetails.year && (
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500 text-sm">Yıl</span>
+                                        <span className="font-semibold text-gray-900">{ride.carDetails.year}</span>
+                                    </div>
+                                )}
+                                {ride.carDetails.color && (
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500 text-sm">Renk</span>
+                                        <span className="font-semibold text-gray-900 capitalize">{ride.carDetails.color}</span>
+                                    </div>
+                                )}
+                                {ride.carDetails.plate && (
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500 text-sm">Plaka</span>
+                                        <span className="font-semibold text-gray-900 uppercase bg-gray-100 px-2 py-1 rounded">
+                                            {ride.carDetails.plate}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {isPassenger && ride.availableSeats > 0 && (
                         <button

@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -36,51 +38,55 @@ const ProtectedRoute = ({ children, requireDriver, requirePassenger }) => {
 
 function AppContent() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <ScrollToTop />
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/rides" element={<RideList />} />
-        <Route path="/rides/:id" element={<RideDetail />} />
-        <Route path="/profile/:userId" element={<Profile />} />
-        <Route
-          path="/edit-profile"
-          element={
-            <ProtectedRoute>
-              <EditProfile />
-            </ProtectedRoute>
-          }
-        />
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/rides" element={<RideList />} />
+          <Route path="/rides/:id" element={<RideDetail />} />
+          <Route path="/profile/:userId" element={<Profile />} />
+          <Route
+            path="/edit-profile"
+            element={
+              <ProtectedRoute>
+                <EditProfile />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/create-ride"
-          element={
-            <ProtectedRoute requireDriver>
-              <CreateRide />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/create-ride"
+            element={
+              <ProtectedRoute requireDriver>
+                <CreateRide />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/my-rides"
-          element={
-            <ProtectedRoute requireDriver>
-              <MyRides />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/my-rides"
+            element={
+              <ProtectedRoute requireDriver>
+                <MyRides />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/my-bookings"
-          element={
-            <ProtectedRoute requirePassenger>
-              <MyBookings />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+          <Route
+            path="/my-bookings"
+            element={
+              <ProtectedRoute requirePassenger>
+                <MyBookings />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </main>
+      <Footer />
     </div>
   );
 }

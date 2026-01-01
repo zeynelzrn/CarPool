@@ -59,7 +59,7 @@ const RideList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans selection:bg-[#004225] selection:text-white flex flex-col">
+    <div className="bg-gray-50 font-sans selection:bg-[#004225] selection:text-white flex flex-col">
       
       {/* --- 1. ÜST HERO ALANI --- */}
       <div className="relative h-72 w-full bg-[#004225] overflow-hidden">

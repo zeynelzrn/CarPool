@@ -58,7 +58,7 @@ const rideSchema = new mongoose.Schema({
     enum: ['active', 'completed', 'cancelled'],
     default: 'active'
   },
-  carInfo: {
+  carDetails: {
     brand: {
       type: String,
       trim: true
@@ -73,6 +73,10 @@ const rideSchema = new mongoose.Schema({
       max: [new Date().getFullYear() + 1, 'Gelecek yıl olamaz']
     },
     color: {
+      type: String,
+      trim: true
+    },
+    plate: {
       type: String,
       trim: true
     }

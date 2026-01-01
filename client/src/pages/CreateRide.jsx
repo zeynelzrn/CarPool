@@ -27,6 +27,7 @@ const CreateRide = () => {
     carModel: '',
     carYear: '',
     carColor: '',
+    carPlate: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -67,11 +68,12 @@ const CreateRide = () => {
           endLat: destCoords.lat,
           endLng: destCoords.lng,
         },
-        carInfo: {
+        carDetails: {
           brand: formData.carBrand,
           model: formData.carModel,
           year: formData.carYear ? Number(formData.carYear) : undefined,
           color: formData.carColor,
+          plate: formData.carPlate,
         },
       };
 
@@ -275,6 +277,17 @@ const CreateRide = () => {
                     onChange={handleChange}
                     className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#004225] transition-all"
                     placeholder="Beyaz"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Plaka</label>
+                  <input
+                    type="text"
+                    name="carPlate"
+                    value={formData.carPlate}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-[#004225] transition-all uppercase"
+                    placeholder="34 ABC 123"
                   />
                 </div>
               </div>

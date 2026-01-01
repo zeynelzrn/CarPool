@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Mobil Overscroll Renkleri */
+html {
+  background-color: #004225; /* Footer rengi - Alt overscroll için */
+  overscroll-behavior: none;
+}
+
+body {
+  background-color: #f9fafb; /* gray-50 - Sayfa zemin rengi */
+  min-height: 100vh;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* iOS Safe Area için padding */
+@supports (padding: max(0px)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}

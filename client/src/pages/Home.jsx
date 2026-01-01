@@ -6,7 +6,7 @@ const Home = () => {
   const { isAuthenticated, user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans selection:bg-[#004225] selection:text-white">
+    <div className="bg-gray-50 font-sans selection:bg-[#004225] selection:text-white">
       
       {/* --- HERO BÖLÜMÜ (Görsel + Yüzen Kutu) --- */}
       <div className="relative">
