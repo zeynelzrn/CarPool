@@ -29,7 +29,9 @@ export const SocketProvider = ({ children }) => {
       });
 
       newSocket.on('connect', () => {
-        console.log('Socket.io bağlandı');
+        console.log('Socket.io bağlandı, userId:', user._id);
+        // Backend'e kullanıcıyı kaydet
+        newSocket.emit('addNewUser', user._id);
       });
 
       newSocket.on('disconnect', () => {
@@ -76,29 +78,20 @@ export const SocketProvider = ({ children }) => {
 
       newSocket.on('new-message', (message) => {
         console.log('Yeni mesaj alındı:', message);
-        
+
         // Sadece alıcı ise bildirim göster (kendi gönderdiğimiz mesajlar için bildirim gösterme)
         const senderId = message.sender?._id || message.sender;
         const receiverId = message.receiver?._id || message.receiver;
         const userId = user._id;
-        
+
         // ID'leri string'e çevir
         const senderIdStr = senderId?.toString();
         const receiverIdStr = receiverId?.toString();
         const userIdStr = userId?.toString();
-        
-        console.log('Mesaj ID karşılaştırması:', {
-          senderIdStr,
-          receiverIdStr,
-          userIdStr,
-          isReceiver: receiverIdStr === userIdStr,
-          isNotSender: senderIdStr !== userIdStr
-        });
-        
+
         // Eğer mesaj bize gönderildiyse (biz receiver isek) bildirim göster
         if (receiverIdStr === userIdStr && senderIdStr !== userIdStr) {
           const senderName = message.sender?.username || 'Birisi';
-          console.log('Bildirim gösteriliyor:', senderName);
           setNotifications(prev => [...prev, {
             id: Date.now(),
             type: 'message',
@@ -106,9 +99,20 @@ export const SocketProvider = ({ children }) => {
             data: message,
             timestamp: new Date()
           }]);
-        } else {
-          console.log('Bildirim gösterilmedi - mesaj bize gönderilmemiş veya biz gönderdik');
         }
+      });
+
+      // Generic notification event listener
+      newSocket.on('notification', (data) => {
+        console.log('Bildirim alındı:', data);
+        setNotifications(prev => [...prev, {
+          id: Date.now(),
+          type: data.type || 'info',
+          message: data.text || data.message,
+          data: data,
+          link: data.link,
+          timestamp: new Date()
+        }]);
       });
 
       setSocket(newSocket);

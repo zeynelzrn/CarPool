@@ -1,6 +1,6 @@
 const Booking = require('../models/Booking');
 const Ride = require('../models/Ride');
-const { getIO } = require('../socket/socketServer');
+const { getIO, getReceiverSocketId } = require('../socket/socketServer');
 
 // @desc    Yolculuğa rezervasyon isteği gönder
 // @route   POST /api/bookings
@@ -38,12 +38,39 @@ const createBooking = async (req, res) => {
 
     // Socket.io ile sürücüye bildirim gönder
     const io = getIO();
-    io.to(`user_${ride.driver.toString()}`).emit('new-booking-request', {
+    const driverIdStr = ride.driver.toString();
+    const driverSocketId = getReceiverSocketId(driverIdStr);
+
+    console.log('📅 Rezervasyon bildirimi gönderiliyor:', {
+      driverId: driverIdStr,
+      driverSocketId: driverSocketId,
+      passenger: populatedBooking.passenger.username
+    });
+
+    // Room bazlı gönderim
+    io.to(`user_${driverIdStr}`).emit('new-booking-request', {
       booking: populatedBooking,
       message: `${populatedBooking.passenger.username} size rezervasyon isteği gönderdi`
     });
-    // Ride room'una da gönder (eğer sürücü ride room'una bağlıysa)
     io.to(`ride_${rideId.toString()}`).emit('booking-updated', populatedBooking);
+
+    // Generic notification event
+    const notificationData = {
+      type: 'booking',
+      text: `${populatedBooking.passenger.username} yeni bir rezervasyon isteği gönderdi!`,
+      link: '/my-rides',
+      data: populatedBooking
+    };
+
+    io.to(`user_${driverIdStr}`).emit('notification', notificationData);
+
+    // Eğer sürücü online ise direkt socket'e de gönder
+    if (driverSocketId) {
+      io.to(driverSocketId).emit('notification', notificationData);
+      console.log('✅ Rezervasyon bildirimi direkt socket\'e gönderildi:', driverSocketId);
+    } else {
+      console.log('⚠️ Sürücü şu an online değil');
+    }
 
     res.status(201).json(populatedBooking);
   } catch (error) {
@@ -66,12 +93,14 @@ const getMyBookings = async (req, res) => {
           path: 'driver',
           select: 'username email profilePicture'
         }
-      })
-      .sort({ createdAt: -1 });
+      });
 
     // Silinmiş ride'ları filtrele
     const validBookings = bookings.filter(booking => booking.ride !== null);
-    
+
+    // Tarihe göre sırala (yakından uzağa)
+    validBookings.sort((a, b) => new Date(a.ride.date) - new Date(b.ride.date));
+
     res.json(validBookings);
   } catch (error) {
     console.error('Rezervasyonlar yüklenirken hata:', error);
@@ -154,17 +183,44 @@ const updateBookingStatus = async (req, res) => {
 
     // Socket.io ile yolcuya bildirim gönder
     const io = getIO();
-    const message = status === 'approved' 
-      ? 'Rezervasyon isteğiniz onaylandı!' 
+    const passengerIdStr = booking.passenger.toString();
+    const passengerSocketId = getReceiverSocketId(passengerIdStr);
+    const message = status === 'approved'
+      ? 'Rezervasyon isteğiniz onaylandı!'
       : 'Rezervasyon isteğiniz reddedildi.';
-    
-    io.to(`user_${booking.passenger.toString()}`).emit('booking-status-updated', {
+
+    console.log('📋 Rezervasyon durumu bildirimi gönderiliyor:', {
+      passengerId: passengerIdStr,
+      passengerSocketId: passengerSocketId,
+      status: status
+    });
+
+    // Room bazlı gönderim
+    io.to(`user_${passengerIdStr}`).emit('booking-status-updated', {
       booking: updatedBooking,
       message: message
     });
-    
-    // Ride room'una da gönder
     io.to(`ride_${booking.ride._id.toString()}`).emit('booking-updated', updatedBooking);
+
+    // Generic notification event
+    const notificationData = {
+      type: 'status',
+      text: status === 'approved'
+        ? 'Rezervasyonunuz onaylandı! Yolculuğunuz hazır.'
+        : 'Rezervasyon talebiniz maalesef reddedildi.',
+      link: '/my-bookings',
+      data: updatedBooking
+    };
+
+    io.to(`user_${passengerIdStr}`).emit('notification', notificationData);
+
+    // Eğer yolcu online ise direkt socket'e de gönder
+    if (passengerSocketId) {
+      io.to(passengerSocketId).emit('notification', notificationData);
+      console.log('✅ Durum bildirimi direkt socket\'e gönderildi:', passengerSocketId);
+    } else {
+      console.log('⚠️ Yolcu şu an online değil');
+    }
 
     res.json(updatedBooking);
   } catch (error) {

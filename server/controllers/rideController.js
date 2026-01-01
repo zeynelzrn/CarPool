@@ -57,7 +57,7 @@ const getRides = async (req, res) => {
 
     const rides = await Ride.find(filter)
       .populate('driver', 'username email')
-      .sort({ date: 1 });
+      .sort({ date: 1, time: 1 });
 
     res.json(rides);
   } catch (error) {
@@ -89,7 +89,7 @@ const getRideById = async (req, res) => {
 const getMyRides = async (req, res) => {
   try {
     const rides = await Ride.find({ driver: req.user._id })
-      .sort({ date: -1 });
+      .sort({ date: 1, time: 1 });
 
     res.json(rides);
   } catch (error) {

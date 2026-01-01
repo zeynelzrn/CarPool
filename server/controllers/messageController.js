@@ -1,7 +1,7 @@
 const Message = require('../models/Message');
 const Ride = require('../models/Ride');
 const Booking = require('../models/Booking');
-const { getIO } = require('../socket/socketServer');
+const { getIO, getReceiverSocketId } = require('../socket/socketServer');
 
 // @desc    Mesaj gönder
 // @route   POST /api/messages
@@ -58,9 +58,37 @@ const sendMessage = async (req, res) => {
 
     // Socket.io ile alıcıya real-time mesaj gönder
     const io = getIO();
-    io.to(`user_${receiverId.toString()}`).emit('new-message', populatedMessage);
-    // Ride room'una da gönder
+    const receiverIdStr = receiverId.toString();
+    const receiverSocketId = getReceiverSocketId(receiverIdStr);
+
+    console.log('📨 Mesaj bildirimi gönderiliyor:', {
+      receiverId: receiverIdStr,
+      receiverSocketId: receiverSocketId,
+      sender: populatedMessage.sender.username
+    });
+
+    // Room bazlı gönderim (her zaman çalışır)
+    io.to(`user_${receiverIdStr}`).emit('new-message', populatedMessage);
     io.to(`ride_${rideId.toString()}`).emit('new-message', populatedMessage);
+
+    // Generic notification event
+    const notificationData = {
+      type: 'message',
+      sender: populatedMessage.sender.username,
+      text: `${populatedMessage.sender.username}: ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`,
+      link: `/rides/${rideId}`,
+      data: populatedMessage
+    };
+
+    io.to(`user_${receiverIdStr}`).emit('notification', notificationData);
+
+    // Eğer alıcı online ise direkt socket'e de gönder
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit('notification', notificationData);
+      console.log('✅ Bildirim direkt socket\'e gönderildi:', receiverSocketId);
+    } else {
+      console.log('⚠️ Alıcı şu an online değil, sadece room\'a gönderildi');
+    }
 
     res.status(201).json(populatedMessage);
   } catch (error) {
