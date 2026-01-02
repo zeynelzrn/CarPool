@@ -21,8 +21,12 @@ const server = http.createServer(app);
 // Socket.io initialization
 initializeSocket(server);
 
-// Middleware
-app.use(cors());
+// Middleware - CORS (Tüm origin'lere izin ver)
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Body parser limitleri - Profil fotoğrafı (Base64) için 50MB'a kadar izin ver
 app.use(express.json({ limit: '50mb' }));
