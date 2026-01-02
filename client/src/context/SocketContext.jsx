@@ -2,10 +2,8 @@ import { createContext, useContext, useEffect, useState, useRef, useCallback } f
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
-// Socket URL: API URL'den /api kısmını çıkararak kök adresi al
-const SOCKET_URL = import.meta.env.VITE_API_URL
-  ? import.meta.env.VITE_API_URL.replace('/api', '')
-  : 'http://localhost:5001';
+// Production URL - Hardcoded for Vercel deployment
+const SOCKET_URL = 'https://carpool-backend-7yyy.onrender.com';
 
 const SocketContext = createContext();
 
