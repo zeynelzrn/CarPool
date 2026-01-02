@@ -28,7 +28,7 @@ const RatingModal = ({ isOpen, onClose, ride, toUser, role, onSuccess }) => {
       setRating(5);
       setComment('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Değerlendirme gönderilemedi');
+      setError(err.response?.data?.message || 'Failed to submit review');
     } finally {
       setLoading(false);
     }
@@ -41,8 +41,8 @@ const RatingModal = ({ isOpen, onClose, ride, toUser, role, onSuccess }) => {
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900">Değerlendirme Yap</h3>
-            <p className="text-sm text-gray-500 mt-1">Yolculuğun nasıldı?</p>
+            <h3 className="text-2xl font-bold text-gray-900">Leave a Review</h3>
+            <p className="text-sm text-gray-500 mt-1">How was your ride?</p>
           </div>
           <button
             onClick={onClose}
@@ -55,7 +55,7 @@ const RatingModal = ({ isOpen, onClose, ride, toUser, role, onSuccess }) => {
         {/* Info Box */}
         <div className="bg-emerald-50 p-4 rounded-2xl mb-6 border border-emerald-100">
           <p className="text-emerald-900 text-sm mb-1">
-            <span className="font-bold">{toUser.username}</span> kullanıcısını puanlıyorsunuz.
+            You are rating <span className="font-bold">{toUser.username}</span>
           </p>
           <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
             {ride.origin} → {ride.destination}
@@ -71,10 +71,10 @@ const RatingModal = ({ isOpen, onClose, ride, toUser, role, onSuccess }) => {
 
         <form onSubmit={handleSubmit}>
           
-          {/* Yıldızlar */}
+          {/* Stars */}
           <div className="mb-6 text-center">
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-              Puanın
+              Your Rating
             </label>
             <div className="flex justify-center gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -95,10 +95,10 @@ const RatingModal = ({ isOpen, onClose, ride, toUser, role, onSuccess }) => {
             <p className="text-sm font-bold text-[#004225] mt-2">{rating} / 5</p>
           </div>
 
-          {/* Yorum Alanı */}
+          {/* Comment Area */}
           <div className="mb-6">
             <label className="block text-sm font-bold text-gray-700 mb-2">
-              Yorumun (İsteğe bağlı)
+              Your Comment (Optional)
             </label>
             <textarea
               value={comment}
@@ -106,21 +106,21 @@ const RatingModal = ({ isOpen, onClose, ride, toUser, role, onSuccess }) => {
               rows="4"
               maxLength={500}
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all resize-none text-sm"
-              placeholder="Deneyimlerini diğer kullanıcılarla paylaş..."
+              placeholder="Share your experience with other users..."
             />
             <div className="flex justify-end mt-1">
                <p className="text-xs text-gray-400">{comment.length} / 500</p>
             </div>
           </div>
 
-          {/* Butonlar */}
+          {/* Buttons */}
           <div className="flex gap-3">
             <button
               type="button"
               onClick={onClose}
               className="flex-1 bg-white border border-gray-200 text-gray-600 py-3 px-4 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all font-bold text-sm"
             >
-              Vazgeç
+              Cancel
             </button>
             <button
               type="submit"
@@ -133,10 +133,10 @@ const RatingModal = ({ isOpen, onClose, ride, toUser, role, onSuccess }) => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span>Gönderiliyor...</span>
+                    <span>Submitting...</span>
                  </>
               ) : (
-                 'Değerlendir'
+                 'Submit Review'
               )}
             </button>
           </div>
