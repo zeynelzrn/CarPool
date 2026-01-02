@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5001/api';
+// Production URL - Hardcoded for Vercel deployment
+const API_URL = 'https://carpool-backend-7yyy.onrender.com/api';
 
 const ForgotPassword = () => {
   const [step, setStep] = useState(1);
