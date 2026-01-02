@@ -182,7 +182,7 @@ const RideList = () => {
                   onChange={handleFilterChange}
                   min="0"
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:bg-white focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all font-medium text-gray-900"
-                  placeholder="$ Limit"
+                  placeholder="₺ Limit"
                 />
               </div>
 
@@ -261,14 +261,29 @@ const RideList = () => {
                     </h3>
 
                     <div className="flex items-center gap-4">
-                      {/* Sürücü Bilgisi */}
-                      <div className="flex items-center gap-2">
-                         {/* Avatar Placeholder */}
-                        <div className="w-8 h-8 rounded-full bg-[#004225]/10 flex items-center justify-center text-[#004225] font-bold text-xs">
-                            {ride.driver?.username?.charAt(0).toUpperCase()}
-                        </div>
+                      {/* Sürücü Bilgisi - Fotoğraf ve İsim Tıklanabilir */}
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                         {/* Profil Fotoğrafı veya Harf */}
+                        <Link to={`/profile/${ride.driver._id}`} className="block">
+                          {ride.driver?.profilePicture ? (
+                            <img
+                              src={ride.driver.profilePicture}
+                              alt={ride.driver.username}
+                              className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm hover:ring-2 hover:ring-[#004225]/30 transition-all"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-[#004225]/10 flex items-center justify-center text-[#004225] font-bold text-sm hover:ring-2 hover:ring-[#004225]/30 transition-all">
+                              {ride.driver?.username?.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </Link>
                         <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-gray-700">{ride.driver.username}</span>
+                            <Link
+                              to={`/profile/${ride.driver._id}`}
+                              className="text-sm font-semibold text-gray-700 hover:text-[#004225] hover:underline transition-colors"
+                            >
+                              {ride.driver.username}
+                            </Link>
                             {/* Rating Display */}
                             <div onClick={(e) => e.preventDefault()}>
                                 <RatingDisplay

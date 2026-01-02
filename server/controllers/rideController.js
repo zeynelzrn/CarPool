@@ -21,7 +21,7 @@ const createRide = async (req, res) => {
     });
 
     const populatedRide = await Ride.findById(ride._id)
-      .populate('driver', 'username email');
+      .populate('driver', 'username email profilePicture');
 
     // Socket.io ile tüm kullanıcılara yeni ilan bildirimi gönder
     const io = getIO();
@@ -56,7 +56,7 @@ const getRides = async (req, res) => {
     }
 
     const rides = await Ride.find(filter)
-      .populate('driver', 'username email')
+      .populate('driver', 'username email profilePicture')
       .sort({ date: 1, time: 1 });
 
     res.json(rides);
@@ -71,7 +71,7 @@ const getRides = async (req, res) => {
 const getRideById = async (req, res) => {
   try {
     const ride = await Ride.findById(req.params.id)
-      .populate('driver', 'username email');
+      .populate('driver', 'username email profilePicture');
 
     if (!ride) {
       return res.status(404).json({ message: 'Yolculuk ilanı bulunamadı' });

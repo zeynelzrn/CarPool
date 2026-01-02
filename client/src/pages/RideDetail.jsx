@@ -340,11 +340,22 @@ const RideDetail = () => {
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
                         <h4 className="text-xs font-bold text-gray-400 uppercase mb-4">Driver</h4>
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-[#004225] font-bold text-lg">
-                                {ride.driver.username.charAt(0).toUpperCase()}
-                            </div>
+                            {/* Profil Fotoğrafı veya Harf - Tıklanabilir */}
+                            <Link to={`/profile/${ride.driver._id}`} className="block">
+                              {ride.driver?.profilePicture ? (
+                                <img
+                                  src={ride.driver.profilePicture}
+                                  alt={ride.driver.username}
+                                  className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm hover:ring-2 hover:ring-[#004225]/30 transition-all"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-[#004225] font-bold text-lg hover:ring-2 hover:ring-[#004225]/30 transition-all">
+                                    {ride.driver.username.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                            </Link>
                             <div>
-                                <Link to={`/profile/${ride.driver._id}`} className="font-bold text-gray-900 hover:underline">
+                                <Link to={`/profile/${ride.driver._id}`} className="font-bold text-gray-900 hover:text-[#004225] hover:underline transition-colors">
                                     {ride.driver.username}
                                 </Link>
                                 <div className="text-sm"><RatingDisplay userId={ride.driver._id} compact={true} /></div>
