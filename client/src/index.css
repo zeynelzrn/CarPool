@@ -6,12 +6,31 @@
 html {
   background-color: #004225; /* Footer rengi - Alt overscroll için */
   overscroll-behavior: none;
+  overflow-x: hidden; /* Yatay kaydırmayı engelle */
 }
 
 body {
   background-color: #f9fafb; /* gray-50 - Sayfa zemin rengi */
   min-height: 100vh;
   -webkit-overflow-scrolling: touch;
+  overflow-x: hidden; /* Yatay kaydırmayı engelle */
+}
+
+/* Minimum Touch Target Size (44px) for Mobile */
+@layer components {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Tüm butonlar ve inputlar için mobil dokunma boyutu */
+button,
+input,
+select,
+textarea,
+a[role="button"] {
+  min-height: 44px;
 }
 
 /* iOS Safe Area için padding */
@@ -36,8 +55,26 @@ body {
   }
 }
 
+@keyframes slide-in-top {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Mobilde yukarıdan, masaüstünde sağdan giriş */
 .animate-slide-in-right {
-  animation: slide-in-right 0.3s ease-out;
+  animation: slide-in-top 0.3s ease-out;
+}
+
+@media (min-width: 640px) {
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out;
+  }
 }
 
 @keyframes fade-in-up {

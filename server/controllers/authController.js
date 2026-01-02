@@ -13,7 +13,14 @@ const generateToken = (id) => {
 // @access  Public
 const register = async (req, res) => {
   try {
-    const { username, email, password, role } = req.body;
+    const { username, email, password, role, securityQuestion, securityAnswer } = req.body;
+
+    // Güvenlik sorusu ve cevabı kontrolü
+    if (!securityQuestion || !securityAnswer) {
+      return res.status(400).json({
+        message: 'Güvenlik sorusu ve cevabı gereklidir'
+      });
+    }
 
     // Kullanıcı zaten var mı kontrol et
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
@@ -29,7 +36,9 @@ const register = async (req, res) => {
       username,
       email,
       password,
-      role
+      role,
+      securityQuestion,
+      securityAnswer
     });
 
     if (user) {
@@ -141,10 +150,80 @@ const getUserById = async (req, res) => {
   }
 };
 
+// @desc    Get security question
+// @route   POST /api/auth/get-security-question
+// @access  Public
+const getSecurityQuestion = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email address is required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({ message: 'No user found with this email address' });
+    }
+
+    res.json({
+      userId: user._id,
+      securityQuestion: user.securityQuestion
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Reset password with security answer
+// @route   POST /api/auth/reset-password-security
+// @access  Public
+const resetPasswordWithAnswer = async (req, res) => {
+  try {
+    const { email, securityAnswer, newPassword } = req.body;
+
+    if (!email || !securityAnswer || !newPassword) {
+      return res.status(400).json({
+        message: 'Email, security answer, and new password are required'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        message: 'New password must be at least 6 characters'
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verify security answer
+    const isAnswerCorrect = await user.compareSecurityAnswer(securityAnswer);
+
+    if (!isAnswerCorrect) {
+      return res.status(401).json({ message: 'Security answer is incorrect' });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Your password has been updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   register,
   login,
   getMe,
   updateProfile,
-  getUserById
+  getUserById,
+  getSecurityQuestion,
+  resetPasswordWithAnswer
 };

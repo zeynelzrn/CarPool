@@ -3,12 +3,22 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 // İkonları kaldırdım, çünkü yeni tasarım daha sade ve tipografi odaklı.
 
+const SECURITY_QUESTIONS = [
+  'What was the name of your first pet?',
+  'What was the name of your elementary school teacher?',
+  'What city were you born in?',
+  'What was the make of your first car?',
+  'What is your mother\'s maiden name?'
+];
+
 const Register = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
     role: 'passenger',
+    securityQuestion: SECURITY_QUESTIONS[0],
+    securityAnswer: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -149,6 +159,47 @@ const Register = () => {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
               </div>
+            </div>
+
+            {/* Güvenlik Sorusu Seçimi */}
+            <div className="pt-4 border-t border-gray-100">
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Security Question
+              </label>
+              <p className="text-xs text-gray-400 mb-2">This question will be used for password recovery.</p>
+              <div className="relative">
+                <select
+                  name="securityQuestion"
+                  value={formData.securityQuestion}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all appearance-none cursor-pointer"
+                >
+                  {SECURITY_QUESTIONS.map((question, index) => (
+                    <option key={index} value={question}>{question}</option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Güvenlik Cevabı */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Security Answer
+              </label>
+              <input
+                type="text"
+                name="securityAnswer"
+                value={formData.securityAnswer}
+                onChange={handleChange}
+                required
+                placeholder="Your answer..."
+                className="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#004225] focus:ring-1 focus:ring-[#004225] transition-all"
+              />
+              <p className="text-xs text-gray-400 mt-1 ml-1">Remember this answer! It will be used if you forget your password.</p>
             </div>
 
             {/* Submit Button */}

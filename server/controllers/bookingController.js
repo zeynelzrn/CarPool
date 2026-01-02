@@ -62,15 +62,9 @@ const createBooking = async (req, res) => {
       data: populatedBooking
     };
 
+    // Sadece room bazlı gönder (duplicate önlemek için)
     io.to(`user_${driverIdStr}`).emit('notification', notificationData);
-
-    // Eğer sürücü online ise direkt socket'e de gönder
-    if (driverSocketId) {
-      io.to(driverSocketId).emit('notification', notificationData);
-      console.log('✅ Rezervasyon bildirimi direkt socket\'e gönderildi:', driverSocketId);
-    } else {
-      console.log('⚠️ Sürücü şu an online değil');
-    }
+    console.log('✅ Rezervasyon bildirimi gönderildi:', `user_${driverIdStr}`);
 
     res.status(201).json(populatedBooking);
   } catch (error) {
@@ -212,15 +206,9 @@ const updateBookingStatus = async (req, res) => {
       data: updatedBooking
     };
 
+    // Sadece room bazlı gönder (duplicate önlemek için)
     io.to(`user_${passengerIdStr}`).emit('notification', notificationData);
-
-    // Eğer yolcu online ise direkt socket'e de gönder
-    if (passengerSocketId) {
-      io.to(passengerSocketId).emit('notification', notificationData);
-      console.log('✅ Durum bildirimi direkt socket\'e gönderildi:', passengerSocketId);
-    } else {
-      console.log('⚠️ Yolcu şu an online değil');
-    }
+    console.log('✅ Durum bildirimi gönderildi:', `user_${passengerIdStr}`);
 
     res.json(updatedBooking);
   } catch (error) {

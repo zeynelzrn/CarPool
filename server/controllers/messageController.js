@@ -80,15 +80,9 @@ const sendMessage = async (req, res) => {
       data: populatedMessage
     };
 
+    // Sadece room bazlı gönder (duplicate önlemek için)
     io.to(`user_${receiverIdStr}`).emit('notification', notificationData);
-
-    // Eğer alıcı online ise direkt socket'e de gönder
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit('notification', notificationData);
-      console.log('✅ Bildirim direkt socket\'e gönderildi:', receiverSocketId);
-    } else {
-      console.log('⚠️ Alıcı şu an online değil, sadece room\'a gönderildi');
-    }
+    console.log('✅ Bildirim room\'a gönderildi:', `user_${receiverIdStr}`);
 
     res.status(201).json(populatedMessage);
   } catch (error) {

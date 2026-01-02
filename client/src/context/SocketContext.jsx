@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
@@ -16,133 +16,164 @@ export const SocketProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
   const [socket, setSocket] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const socketRef = useRef(null);
 
   useEffect(() => {
+    // Eğer zaten bağlı bir socket varsa, tekrar oluşturma
+    if (socketRef.current) {
+      return;
+    }
+
     if (isAuthenticated && user) {
       const token = localStorage.getItem('token');
-      
+
       const newSocket = io('http://localhost:5001', {
-        auth: {
-          token: token
-        },
+        auth: { token },
         transports: ['websocket', 'polling']
       });
 
-      newSocket.on('connect', () => {
+      socketRef.current = newSocket;
+
+      // === EVENT HANDLERS ===
+      const handleConnect = () => {
         console.log('Socket.io bağlandı, userId:', user._id);
-        // Backend'e kullanıcıyı kaydet
         newSocket.emit('addNewUser', user._id);
-      });
+      };
 
-      newSocket.on('disconnect', () => {
+      const handleDisconnect = () => {
         console.log('Socket.io bağlantısı kesildi');
-      });
+      };
 
-      newSocket.on('connect_error', (error) => {
+      const handleConnectError = (error) => {
         console.error('Socket.io bağlantı hatası:', error);
-      });
+      };
 
-      // Bildirimler için event listener'lar
-      newSocket.on('new-booking-request', (data) => {
+      const handleNewBookingRequest = (data) => {
         console.log('Yeni rezervasyon isteği:', data);
         setNotifications(prev => [...prev, {
-          id: Date.now(),
+          id: Date.now() + Math.random(),
           type: 'booking-request',
           message: data.message,
           data: data.booking,
           timestamp: new Date()
         }]);
-      });
+      };
 
-      newSocket.on('booking-status-updated', (data) => {
+      const handleBookingStatusUpdated = (data) => {
         console.log('Rezervasyon durumu güncellendi:', data);
         setNotifications(prev => [...prev, {
-          id: Date.now(),
+          id: Date.now() + Math.random(),
           type: 'booking-status',
           message: data.message,
           data: data.booking,
           timestamp: new Date()
         }]);
-      });
+      };
 
-      newSocket.on('new-ride-created', (data) => {
+      const handleNewRideCreated = (data) => {
         console.log('Yeni yolculuk ilanı:', data);
         setNotifications(prev => [...prev, {
-          id: Date.now(),
+          id: Date.now() + Math.random(),
           type: 'new-ride',
           message: data.message,
           data: data.ride,
           timestamp: new Date()
         }]);
-      });
+      };
 
-      newSocket.on('new-message', (message) => {
+      const handleNewMessage = (message) => {
+        // Sadece log bas, bildirim oluşturma
+        // Bildirim 'notification' eventi üzerinden geliyor
         console.log('Yeni mesaj alındı:', message);
+      };
 
-        // Sadece alıcı ise bildirim göster (kendi gönderdiğimiz mesajlar için bildirim gösterme)
-        const senderId = message.sender?._id || message.sender;
-        const receiverId = message.receiver?._id || message.receiver;
-        const userId = user._id;
-
-        // ID'leri string'e çevir
-        const senderIdStr = senderId?.toString();
-        const receiverIdStr = receiverId?.toString();
-        const userIdStr = userId?.toString();
-
-        // Eğer mesaj bize gönderildiyse (biz receiver isek) bildirim göster
-        if (receiverIdStr === userIdStr && senderIdStr !== userIdStr) {
-          const senderName = message.sender?.username || 'Birisi';
-          setNotifications(prev => [...prev, {
-            id: Date.now(),
-            type: 'message',
-            message: `${senderName}: ${message.content}`,
-            data: message,
-            timestamp: new Date()
-          }]);
-        }
-      });
-
-      // Generic notification event listener
-      newSocket.on('notification', (data) => {
+      const handleNotification = (data) => {
         console.log('Bildirim alındı:', data);
-        setNotifications(prev => [...prev, {
-          id: Date.now(),
-          type: data.type || 'info',
-          message: data.text || data.message,
-          data: data,
-          link: data.link,
-          timestamp: new Date()
-        }]);
-      });
+        const newMessage = data.text || data.message;
+
+        setNotifications(prev => {
+          // Son 2 saniye içinde aynı içerikli bildirim var mı? (Duplicate koruması)
+          const isDuplicate = prev.some(n =>
+            (n.message === newMessage) &&
+            (new Date() - new Date(n.timestamp) < 2000)
+          );
+
+          if (isDuplicate) {
+            console.log('Duplicate bildirim engellendi:', newMessage);
+            return prev;
+          }
+
+          return [...prev, {
+            id: Date.now() + Math.random(),
+            type: data.type || 'info',
+            message: newMessage,
+            data: data,
+            link: data.link,
+            timestamp: new Date()
+          }];
+        });
+      };
+
+      // === ÖNCE ESKİ LISTENER'LARI TEMİZLE (garanti için) ===
+      newSocket.off('connect', handleConnect);
+      newSocket.off('disconnect', handleDisconnect);
+      newSocket.off('connect_error', handleConnectError);
+      newSocket.off('new-booking-request', handleNewBookingRequest);
+      newSocket.off('booking-status-updated', handleBookingStatusUpdated);
+      newSocket.off('new-ride-created', handleNewRideCreated);
+      newSocket.off('new-message', handleNewMessage);
+      newSocket.off('notification', handleNotification);
+
+      // === SONRA YENİ LISTENER'LARI EKLE ===
+      newSocket.on('connect', handleConnect);
+      newSocket.on('disconnect', handleDisconnect);
+      newSocket.on('connect_error', handleConnectError);
+      newSocket.on('new-booking-request', handleNewBookingRequest);
+      newSocket.on('booking-status-updated', handleBookingStatusUpdated);
+      newSocket.on('new-ride-created', handleNewRideCreated);
+      newSocket.on('new-message', handleNewMessage);
+      newSocket.on('notification', handleNotification);
 
       setSocket(newSocket);
 
+      // === CLEANUP FUNCTION ===
       return () => {
+        console.log('Socket cleanup yapılıyor...');
+        newSocket.off('connect', handleConnect);
+        newSocket.off('disconnect', handleDisconnect);
+        newSocket.off('connect_error', handleConnectError);
+        newSocket.off('new-booking-request', handleNewBookingRequest);
+        newSocket.off('booking-status-updated', handleBookingStatusUpdated);
+        newSocket.off('new-ride-created', handleNewRideCreated);
+        newSocket.off('new-message', handleNewMessage);
+        newSocket.off('notification', handleNotification);
         newSocket.close();
+        socketRef.current = null;
       };
     } else {
-      if (socket) {
-        socket.close();
+      // Kullanıcı çıkış yaptıysa socket'i kapat
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
         setSocket(null);
       }
       setNotifications([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?._id]);
 
-  const removeNotification = (id) => {
+  const removeNotification = useCallback((id) => {
     setNotifications(prev => prev.filter(notif => notif.id !== id));
-  };
+  }, []);
 
-  const clearNotifications = () => {
+  const clearNotifications = useCallback(() => {
     setNotifications([]);
-  };
+  }, []);
 
-  const joinRideRoom = (rideId) => {
-    if (socket) {
-      socket.emit('join-ride-room', rideId);
+  const joinRideRoom = useCallback((rideId) => {
+    if (socketRef.current) {
+      socketRef.current.emit('join-ride-room', rideId);
     }
-  };
+  }, []);
 
   const value = {
     socket,
@@ -158,4 +189,3 @@ export const SocketProvider = ({ children }) => {
     </SocketContext.Provider>
   );
 };
-

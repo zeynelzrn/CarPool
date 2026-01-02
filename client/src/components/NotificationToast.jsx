@@ -109,17 +109,17 @@ const NotificationToast = () => {
   const getNotificationTitle = (type) => {
     switch (type) {
       case 'message':
-        return 'Yeni Mesaj';
+        return 'New Message';
       case 'booking-request':
       case 'booking':
-        return 'Rezervasyon Talebi';
+        return 'Booking Request';
       case 'booking-status':
       case 'status':
-        return 'Rezervasyon Durumu';
+        return 'Booking Status';
       case 'new-ride':
-        return 'Yeni Yolculuk';
+        return 'New Ride';
       default:
-        return 'Bildirim';
+        return 'Notification';
     }
   };
 
@@ -143,7 +143,7 @@ const NotificationToast = () => {
   if (notifications.length === 0) return null;
 
   return (
-    <div className="fixed top-20 right-4 z-[9999] space-y-3 max-w-sm w-full pointer-events-none">
+    <div className="fixed top-20 left-4 right-4 sm:left-auto sm:right-4 z-[9999] space-y-3 max-w-[calc(100vw-2rem)] sm:max-w-sm w-full pointer-events-none">
       {notifications.slice(0, 3).map((notification, index) => (
         <div
           key={notification.id}
@@ -174,7 +174,7 @@ const NotificationToast = () => {
                     {getNotificationTitle(notification.type)}
                   </h4>
                   <span className="text-xs text-gray-400">
-                    {new Date(notification.timestamp).toLocaleTimeString('tr-TR', {
+                    {new Date(notification.timestamp).toLocaleTimeString('en-US', {
                       hour: '2-digit',
                       minute: '2-digit'
                     })}
@@ -184,7 +184,7 @@ const NotificationToast = () => {
                   {notification.message}
                 </p>
                 <p className="text-xs text-[#004225] font-medium mt-2 flex items-center gap-1">
-                  <span>Detaylar için tıklayın</span>
+                  <span>Click for details</span>
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -218,11 +218,11 @@ const NotificationToast = () => {
         </div>
       ))}
 
-      {/* Fazla bildirim varsa göster */}
+      {/* Show more notifications indicator */}
       {notifications.length > 3 && (
         <div className="pointer-events-auto text-center">
           <span className="inline-block bg-gray-900 text-white text-xs px-3 py-1.5 rounded-full">
-            +{notifications.length - 3} bildirim daha
+            +{notifications.length - 3} more notifications
           </span>
         </div>
       )}

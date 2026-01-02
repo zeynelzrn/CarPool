@@ -8,6 +8,7 @@ import NotificationToast from './components/NotificationToast';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import RideList from './pages/RideList';
 import RideDetail from './pages/RideDetail';
 import CreateRide from './pages/CreateRide';
@@ -49,6 +50,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/rides" element={<RideList />} />
           <Route path="/rides/:id" element={<RideDetail />} />
           <Route path="/profile/:userId" element={<Profile />} />
