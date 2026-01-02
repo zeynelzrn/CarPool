@@ -100,30 +100,42 @@ const getMe = async (req, res) => {
 // @access  Private
 const updateProfile = async (req, res) => {
   try {
-    const { username, phone, bio, profilePicture } = req.body;
+    const { username, phone, bio, profilePicture, removeProfilePicture } = req.body;
 
     // Kullanıcı adı değiştiriliyorsa, başka birisi kullanıyor mu kontrol et
     if (username) {
-      const usernameExists = await User.findOne({ 
-        username, 
-        _id: { $ne: req.user._id } 
+      const usernameExists = await User.findOne({
+        username,
+        _id: { $ne: req.user._id }
       });
-      
+
       if (usernameExists) {
-        return res.status(400).json({ 
-          message: 'Bu kullanıcı adı zaten kullanılıyor' 
+        return res.status(400).json({
+          message: 'Bu kullanıcı adı zaten kullanılıyor'
         });
       }
     }
 
+    // Güncelleme objesi
+    const updateData = {
+      ...(username && { username }),
+      ...(phone !== undefined && { phone }),
+      ...(bio !== undefined && { bio }),
+    };
+
+    // Fotoğraf mantığı:
+    // 1. removeProfilePicture === true ise fotoğrafı sil (boş string yap)
+    // 2. profilePicture varsa yeni fotoğrafı kaydet
+    // 3. Hiçbiri değilse mevcut fotoğrafı koru (updateData'ya ekleme)
+    if (removeProfilePicture === true) {
+      updateData.profilePicture = ''; // Fotoğrafı kaldır
+    } else if (profilePicture !== undefined) {
+      updateData.profilePicture = profilePicture; // Yeni fotoğraf
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
-      {
-        ...(username && { username }),
-        ...(phone !== undefined && { phone }),
-        ...(bio !== undefined && { bio }),
-        ...(profilePicture !== undefined && { profilePicture }),
-      },
+      updateData,
       { new: true, runValidators: true }
     ).select('-password');
 

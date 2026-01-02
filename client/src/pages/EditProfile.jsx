@@ -20,6 +20,7 @@ const EditProfile = () => {
   const [pageLoading, setPageLoading] = useState(true); // Sayfa yükleniyor durumu
   const [imagePreview, setImagePreview] = useState('');
   const [selectedFile, setSelectedFile] = useState(null); // Yeni seçilen dosya
+  const [removePhoto, setRemovePhoto] = useState(false); // Fotoğrafı kaldırma flag'i
 
   // 1. Sayfa Açılışında En Güncel Veriyi Çek
   useEffect(() => {
@@ -72,8 +73,9 @@ const EditProfile = () => {
         setError('Image size must be less than 2MB');
         return;
       }
-      
+
       setSelectedFile(file); // Dosyayı kaydet
+      setRemovePhoto(false); // Yeni fotoğraf seçildiğinde kaldırma flag'ini sıfırla
 
       // Önizleme oluştur
       const reader = new FileReader();
@@ -82,6 +84,13 @@ const EditProfile = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  // Fotoğrafı Kaldır
+  const handleRemovePhoto = () => {
+    setImagePreview('');
+    setSelectedFile(null);
+    setRemovePhoto(true); // Backend'e fotoğrafı sil sinyali gönder
   };
 
   const handleSubmit = async (e) => {
@@ -93,11 +102,16 @@ const EditProfile = () => {
       // Gönderilecek objeyi hazırla
       const payload = { ...formData };
 
-      // KESİN ÇÖZÜM: Resim Mantığı
-      // Eğer yeni bir dosya seçildiyse (selectedFile varsa), Base64'e çevirip ekle.
-      // Seçilmediyse profilePicture alanını hiç gönderme.
-      if (selectedFile) {
-         // Dosyayı Base64 string'e çevirme promise'i
+      // FOTOĞRAF MANTIĞI:
+      // 1. Eğer "Fotoğrafı Kaldır" seçildiyse -> removeProfilePicture: true gönder
+      // 2. Eğer yeni dosya seçildiyse -> Base64'e çevirip profilePicture olarak gönder
+      // 3. Hiçbiri değilse -> profilePicture alanını gönderme (mevcut fotoğraf korunur)
+
+      if (removePhoto) {
+        // Fotoğrafı tamamen kaldır
+        payload.removeProfilePicture = true;
+      } else if (selectedFile) {
+         // Yeni fotoğraf yükle
          const toBase64 = file => new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -177,7 +191,8 @@ const EditProfile = () => {
                     <UserIcon className="w-16 h-16 text-[#004225]" />
                   </div>
                 )}
-                
+
+                {/* Fotoğraf Yükle Butonu */}
                 <label className="absolute bottom-0 right-0 bg-[#004225] text-white p-2.5 rounded-full cursor-pointer hover:bg-[#00331b] transition-all shadow-lg transform group-hover:scale-110 border-2 border-white">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -191,7 +206,29 @@ const EditProfile = () => {
                   />
                 </label>
               </div>
+
               <p className="text-xs text-gray-400 mt-3 font-medium">Maximum file size: 2MB</p>
+
+              {/* Fotoğrafı Kaldır Butonu - Sadece fotoğraf varsa göster */}
+              {imagePreview && (
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  className="mt-3 flex items-center gap-2 text-red-500 hover:text-red-700 text-sm font-medium transition-colors hover:bg-red-50 px-3 py-1.5 rounded-lg"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Remove Photo
+                </button>
+              )}
+
+              {/* Fotoğraf kaldırılacak uyarısı */}
+              {removePhoto && (
+                <p className="text-xs text-orange-500 mt-2 font-medium">
+                  Photo will be removed when you save changes.
+                </p>
+              )}
             </div>
 
             {/* Kullanıcı Adı */}

@@ -16,37 +16,44 @@ const Profile = () => {
 
   useEffect(() => {
     if (userId) {
-      fetchUserRatings();
-      fetchUserData();
+      // Her iki veriyi de paralel çek, ikisi de bitince loading'i kapat
+      fetchAllData();
     } else {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  const fetchUserData = async () => {
+  const fetchAllData = async () => {
+    setLoading(true); // Garantiye al
     try {
-      const userData = await authService.getUserById(userId);
-      setProfileUser(userData);
-    } catch (error) {
-      console.error('Failed to load user information:', error);
-      setProfileUser(null);
-    }
-  };
+      // Paralel çağrı - ikisi de tamamlanana kadar bekle
+      const [userData, ratingsData] = await Promise.all([
+        authService.getUserById(userId).catch(err => {
+          console.error('Failed to load user information:', err);
+          return null;
+        }),
+        ratingService.getUserRatings(userId).catch(err => {
+          console.error('Failed to load ratings:', err);
+          return null;
+        })
+      ]);
 
-  const fetchUserRatings = async () => {
-    try {
-      const data = await ratingService.getUserRatings(userId);
-      setRatings(data?.ratings || []);
-      setAverageRating(data?.averageRating || 0);
-      setTotalRatings(data?.totalRatings || 0);
-    } catch (error) {
-      console.error('Failed to load ratings:', error);
-      setRatings([]);
-      setAverageRating(0);
-      setTotalRatings(0);
+      // User data
+      setProfileUser(userData);
+
+      // Ratings data
+      if (ratingsData) {
+        setRatings(ratingsData.ratings || []);
+        setAverageRating(ratingsData.averageRating || 0);
+        setTotalRatings(ratingsData.totalRatings || 0);
+      } else {
+        setRatings([]);
+        setAverageRating(0);
+        setTotalRatings(0);
+      }
     } finally {
-      setLoading(false);
+      setLoading(false); // Her durumda loading'i kapat
     }
   };
 
