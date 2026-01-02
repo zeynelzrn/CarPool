@@ -16,7 +16,7 @@ const Home = () => {
           <div 
             className="absolute inset-0 bg-cover bg-center transform scale-105"
             style={{
-              backgroundImage: "url('src/assets/bgg.jpg')", // Senin resmin
+              backgroundImage: "url('/bgg.jpg')",
             }}
           >
              {/* Resim üzerine hafif koyu filtre (Yeşil tonlu) */}
