@@ -4,8 +4,9 @@
 
 /* Mobil Overscroll Renkleri */
 html {
-  background-color: #004225; /* Footer rengi - Alt overscroll için */
+  background-color: #004225; /* Navbar/Footer rengi - Overscroll için */
   overscroll-behavior: none;
+  overscroll-behavior-y: none;
   overflow-x: hidden; /* Yatay kaydırmayı engelle */
 }
 
@@ -14,6 +15,14 @@ body {
   min-height: 100vh;
   -webkit-overflow-scrolling: touch;
   overflow-x: hidden; /* Yatay kaydırmayı engelle */
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+}
+
+/* iOS Safari için ek overscroll koruması */
+#root {
+  min-height: 100vh;
+  background-color: #f9fafb;
 }
 
 /* Minimum Touch Target Size (44px) for Mobile */

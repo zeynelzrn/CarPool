@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-
 import { rideService } from '../services/rideService';
 import { bookingService } from '../services/bookingService';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import RatingDisplay from '../components/RatingDisplay';
 import ChatModal from '../components/ChatModal';
 import { MapIcon, CalendarIcon, CarSolidIcon } from '../components/Icons';
@@ -137,6 +138,7 @@ const RideDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isPassenger } = useAuth();
+  const { addNotification } = useSocket();
 
   const [ride, setRide] = useState(null);
   const [routePath, setRoutePath] = useState([]);
@@ -203,13 +205,21 @@ const RideDetail = () => {
     try {
       setBookingLoading(true);
       await bookingService.createBooking(id);
-      setMessage({ type: 'success', text: 'İstek gönderildi!' });
+      setMessage({ type: 'success', text: 'Your booking request has been sent!' });
+
+      // Yolcuya "Bekliyor" bildirimi göster
+      addNotification({
+        type: 'info',
+        message: 'Your booking request has been sent! Waiting for driver approval.',
+        link: '/my-bookings'
+      });
+
       fetchRideDetail();
       checkBooking();
     } catch (error) {
       setMessage({
         type: 'error',
-        text: error.response?.data?.message || 'İşlem başarısız',
+        text: error.response?.data?.message || 'Operation failed',
       });
     } finally {
       setBookingLoading(false);

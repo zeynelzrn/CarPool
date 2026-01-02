@@ -185,8 +185,8 @@ const Navbar = () => {
                 </span>
               </div>
 
-              {/* Menü Linkleri - Ortada */}
-              <nav className={`flex flex-col items-center gap-6 transition-all duration-500 delay-200 ${
+              {/* Menü Linkleri - Ortada (Kullanıcı bilgisi ile çakışmayı önlemek için mt-32) */}
+              <nav className={`flex flex-col items-center gap-6 mt-32 transition-all duration-500 delay-200 ${
                 isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}>
                 {isDriver && (

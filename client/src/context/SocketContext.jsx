@@ -22,6 +22,41 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const socketRef = useRef(null);
+  const recentNotificationsRef = useRef(new Set()); // Duplicate kontrolü için
+
+  // === DEDUPLICATION HELPER ===
+  const isDuplicateNotification = (message, type) => {
+    const key = `${type}:${message}`;
+    if (recentNotificationsRef.current.has(key)) {
+      console.log('Duplicate bildirim engellendi:', key);
+      return true;
+    }
+    recentNotificationsRef.current.add(key);
+    // 3 saniye sonra key'i temizle
+    setTimeout(() => {
+      recentNotificationsRef.current.delete(key);
+    }, 3000);
+    return false;
+  };
+
+  // === MANUEL BİLDİRİM EKLEME FONKSİYONU ===
+  const addNotification = useCallback((notification) => {
+    const message = notification.message || notification.text;
+    const type = notification.type || 'info';
+
+    if (isDuplicateNotification(message, type)) {
+      return;
+    }
+
+    setNotifications(prev => [...prev, {
+      id: Date.now() + Math.random(),
+      type: type,
+      message: message,
+      data: notification.data,
+      link: notification.link,
+      timestamp: new Date()
+    }]);
+  }, []);
 
   useEffect(() => {
     // Eğer zaten bağlı bir socket varsa, tekrar oluşturma
@@ -55,10 +90,17 @@ export const SocketProvider = ({ children }) => {
 
       const handleNewBookingRequest = (data) => {
         console.log('Yeni rezervasyon isteği:', data);
+        const message = data.message;
+
+        // Deduplication kontrolü
+        if (isDuplicateNotification(message, 'booking-request')) {
+          return;
+        }
+
         setNotifications(prev => [...prev, {
           id: Date.now() + Math.random(),
           type: 'booking-request',
-          message: data.message,
+          message: message,
           data: data.booking,
           timestamp: new Date()
         }]);
@@ -66,10 +108,17 @@ export const SocketProvider = ({ children }) => {
 
       const handleBookingStatusUpdated = (data) => {
         console.log('Rezervasyon durumu güncellendi:', data);
+        const message = data.message;
+
+        // Deduplication kontrolü
+        if (isDuplicateNotification(message, 'booking-status')) {
+          return;
+        }
+
         setNotifications(prev => [...prev, {
           id: Date.now() + Math.random(),
           type: 'booking-status',
-          message: data.message,
+          message: message,
           data: data.booking,
           timestamp: new Date()
         }]);
@@ -77,10 +126,17 @@ export const SocketProvider = ({ children }) => {
 
       const handleNewRideCreated = (data) => {
         console.log('Yeni yolculuk ilanı:', data);
+        const message = data.message;
+
+        // Deduplication kontrolü
+        if (isDuplicateNotification(message, 'new-ride')) {
+          return;
+        }
+
         setNotifications(prev => [...prev, {
           id: Date.now() + Math.random(),
           type: 'new-ride',
-          message: data.message,
+          message: message,
           data: data.ride,
           timestamp: new Date()
         }]);
@@ -95,28 +151,21 @@ export const SocketProvider = ({ children }) => {
       const handleNotification = (data) => {
         console.log('Bildirim alındı:', data);
         const newMessage = data.text || data.message;
+        const type = data.type || 'info';
 
-        setNotifications(prev => {
-          // Son 2 saniye içinde aynı içerikli bildirim var mı? (Duplicate koruması)
-          const isDuplicate = prev.some(n =>
-            (n.message === newMessage) &&
-            (new Date() - new Date(n.timestamp) < 2000)
-          );
+        // Deduplication kontrolü
+        if (isDuplicateNotification(newMessage, type)) {
+          return;
+        }
 
-          if (isDuplicate) {
-            console.log('Duplicate bildirim engellendi:', newMessage);
-            return prev;
-          }
-
-          return [...prev, {
-            id: Date.now() + Math.random(),
-            type: data.type || 'info',
-            message: newMessage,
-            data: data,
-            link: data.link,
-            timestamp: new Date()
-          }];
-        });
+        setNotifications(prev => [...prev, {
+          id: Date.now() + Math.random(),
+          type: type,
+          message: newMessage,
+          data: data,
+          link: data.link,
+          timestamp: new Date()
+        }]);
       };
 
       // === ÖNCE ESKİ LISTENER'LARI TEMİZLE (garanti için) ===
@@ -183,6 +232,7 @@ export const SocketProvider = ({ children }) => {
   const value = {
     socket,
     notifications,
+    addNotification,
     removeNotification,
     clearNotifications,
     joinRideRoom

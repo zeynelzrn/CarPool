@@ -47,23 +47,12 @@ const createBooking = async (req, res) => {
       passenger: populatedBooking.passenger.username
     });
 
-    // Room bazlı gönderim
+    // Room bazlı gönderim - Sadece new-booking-request eventi (duplicate önlemek için notification eventi kaldırıldı)
     io.to(`user_${driverIdStr}`).emit('new-booking-request', {
       booking: populatedBooking,
-      message: `${populatedBooking.passenger.username} size rezervasyon isteği gönderdi`
+      message: `${populatedBooking.passenger.username} sent you a booking request`
     });
     io.to(`ride_${rideId.toString()}`).emit('booking-updated', populatedBooking);
-
-    // Generic notification event
-    const notificationData = {
-      type: 'booking',
-      text: `${populatedBooking.passenger.username} yeni bir rezervasyon isteği gönderdi!`,
-      link: '/my-rides',
-      data: populatedBooking
-    };
-
-    // Sadece room bazlı gönder (duplicate önlemek için)
-    io.to(`user_${driverIdStr}`).emit('notification', notificationData);
     console.log('✅ Rezervasyon bildirimi gönderildi:', `user_${driverIdStr}`);
 
     res.status(201).json(populatedBooking);
@@ -189,25 +178,12 @@ const updateBookingStatus = async (req, res) => {
       status: status
     });
 
-    // Room bazlı gönderim
+    // Room bazlı gönderim - Sadece booking-status-updated eventi (duplicate önlemek için notification eventi kaldırıldı)
     io.to(`user_${passengerIdStr}`).emit('booking-status-updated', {
       booking: updatedBooking,
       message: message
     });
     io.to(`ride_${booking.ride._id.toString()}`).emit('booking-updated', updatedBooking);
-
-    // Generic notification event
-    const notificationData = {
-      type: 'status',
-      text: status === 'approved'
-        ? 'Rezervasyonunuz onaylandı! Yolculuğunuz hazır.'
-        : 'Rezervasyon talebiniz maalesef reddedildi.',
-      link: '/my-bookings',
-      data: updatedBooking
-    };
-
-    // Sadece room bazlı gönder (duplicate önlemek için)
-    io.to(`user_${passengerIdStr}`).emit('notification', notificationData);
     console.log('✅ Durum bildirimi gönderildi:', `user_${passengerIdStr}`);
 
     res.json(updatedBooking);
