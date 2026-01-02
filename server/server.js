@@ -23,8 +23,10 @@ initializeSocket(server);
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Body parser limitleri - Profil fotoğrafı (Base64) için 50MB'a kadar izin ver
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -40,8 +42,26 @@ app.get('/', (req, res) => {
 
 // Hata yakalama middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Sunucu hatası', error: err.message });
+  console.error('Server Error:', err.message);
+
+  // Payload Too Large hatası (dosya boyutu aşıldı)
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      message: 'File size is too large. Maximum allowed size is 50MB.',
+      error: 'PAYLOAD_TOO_LARGE'
+    });
+  }
+
+  // JSON parse hatası
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({
+      message: 'Invalid request format',
+      error: 'INVALID_JSON'
+    });
+  }
+
+  // Genel sunucu hatası
+  res.status(500).json({ message: 'Server error', error: err.message });
 });
 
 const PORT = process.env.PORT || 5000;
