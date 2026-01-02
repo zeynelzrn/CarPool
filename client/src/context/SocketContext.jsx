@@ -2,6 +2,11 @@ import { createContext, useContext, useEffect, useState, useRef, useCallback } f
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
+// Socket URL: API URL'den /api kısmını çıkararak kök adresi al
+const SOCKET_URL = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace('/api', '')
+  : 'http://localhost:5001';
+
 const SocketContext = createContext();
 
 export const useSocket = () => {
@@ -27,7 +32,7 @@ export const SocketProvider = ({ children }) => {
     if (isAuthenticated && user) {
       const token = localStorage.getItem('token');
 
-      const newSocket = io('http://localhost:5001', {
+      const newSocket = io(SOCKET_URL, {
         auth: { token },
         transports: ['websocket', 'polling']
       });
