@@ -168,7 +168,18 @@ const getUserById = async (req, res) => {
 const getSecurityQuestion = async (req, res) => {
   try {
     const { email } = req.body;
-    console.log('🔐 Security question request received:', email);
+
+    // ============== VERİTABANI RÖNTGENİ (DEBUG) ==============
+    const allUsers = await User.find({}, 'email');
+    console.log('');
+    console.log('=============== VERİTABANI RÖNTGENİ ===============');
+    console.log('📧 Aranan Email (raw):', JSON.stringify(req.body.email));
+    console.log('📧 Aranan Email (trim+lower):', email ? email.trim().toLowerCase() : 'N/A');
+    console.log('📋 DB\'deki TOPLAM Kullanıcı Sayısı:', allUsers.length);
+    console.log('📋 DB\'deki TÜM Mailler:', allUsers.map(u => u.email));
+    console.log('===================================================');
+    console.log('');
+    // =========================================================
 
     if (!email) {
       console.log('❌ Email not provided');
@@ -181,6 +192,7 @@ const getSecurityQuestion = async (req, res) => {
 
     // Önce tam eşleşme dene
     let user = await User.findOne({ email: cleanEmail });
+    console.log('🔎 Tam eşleşme sonucu:', user ? 'BULUNDU' : 'BULUNAMADI');
 
     // Bulunamazsa regex ile dene (boşluk/whitespace toleransı)
     if (!user) {
@@ -188,17 +200,16 @@ const getSecurityQuestion = async (req, res) => {
       user = await User.findOne({
         email: { $regex: new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
       });
+      console.log('🔎 Regex eşleşme sonucu:', user ? 'BULUNDU' : 'BULUNAMADI');
     }
 
     if (!user) {
       console.log('❌ User not found in database for email:', cleanEmail);
-      // Debug: Tüm kullanıcıların email'lerini listele
-      const allUsers = await User.find({}).select('email').limit(10);
-      console.log('📋 Sample emails in DB:', allUsers.map(u => u.email));
+      console.log('💡 İpucu: Yukarıdaki mail listesinde aranan mail var mı kontrol edin!');
       return res.status(404).json({ message: 'No user found with this email address' });
     }
 
-    console.log('✅ User found:', user.email);
+    console.log('✅ User found:', user.email, '| ID:', user._id);
 
     // Security question kontrolü
     if (!user.securityQuestion) {
@@ -206,12 +217,14 @@ const getSecurityQuestion = async (req, res) => {
       return res.status(400).json({ message: 'Security question not set for this account' });
     }
 
+    console.log('✅ Security question found, returning to client');
     res.json({
       userId: user._id,
       securityQuestion: user.securityQuestion
     });
   } catch (error) {
     console.error('❌ getSecurityQuestion error:', error.message);
+    console.error('Stack:', error.stack);
     res.status(500).json({ message: error.message });
   }
 };
