@@ -168,15 +168,42 @@ const getUserById = async (req, res) => {
 const getSecurityQuestion = async (req, res) => {
   try {
     const { email } = req.body;
+    console.log('🔐 Security question request received:', email);
 
     if (!email) {
+      console.log('❌ Email not provided');
       return res.status(400).json({ message: 'Email address is required' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    // Email'i temizle ve küçük harfe çevir
+    const cleanEmail = email.trim().toLowerCase();
+    console.log('🔍 Searching for email:', cleanEmail);
+
+    // Önce tam eşleşme dene
+    let user = await User.findOne({ email: cleanEmail });
+
+    // Bulunamazsa regex ile dene (boşluk/whitespace toleransı)
+    if (!user) {
+      console.log('⚠️ Exact match not found, trying regex search...');
+      user = await User.findOne({
+        email: { $regex: new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+      });
+    }
 
     if (!user) {
+      console.log('❌ User not found in database for email:', cleanEmail);
+      // Debug: Tüm kullanıcıların email'lerini listele
+      const allUsers = await User.find({}).select('email').limit(10);
+      console.log('📋 Sample emails in DB:', allUsers.map(u => u.email));
       return res.status(404).json({ message: 'No user found with this email address' });
+    }
+
+    console.log('✅ User found:', user.email);
+
+    // Security question kontrolü
+    if (!user.securityQuestion) {
+      console.log('⚠️ Security question not set for user:', user.email);
+      return res.status(400).json({ message: 'Security question not set for this account' });
     }
 
     res.json({
@@ -184,6 +211,7 @@ const getSecurityQuestion = async (req, res) => {
       securityQuestion: user.securityQuestion
     });
   } catch (error) {
+    console.error('❌ getSecurityQuestion error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -194,8 +222,10 @@ const getSecurityQuestion = async (req, res) => {
 const resetPasswordWithAnswer = async (req, res) => {
   try {
     const { email, securityAnswer, newPassword } = req.body;
+    console.log('🔑 Password reset request received for:', email);
 
     if (!email || !securityAnswer || !newPassword) {
+      console.log('❌ Missing required fields');
       return res.status(400).json({
         message: 'Email, security answer, and new password are required'
       });
@@ -207,25 +237,46 @@ const resetPasswordWithAnswer = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    // Email'i temizle ve küçük harfe çevir
+    const cleanEmail = email.trim().toLowerCase();
+    console.log('🔍 Searching for email:', cleanEmail);
+
+    // Önce tam eşleşme dene
+    let user = await User.findOne({ email: cleanEmail });
+
+    // Bulunamazsa regex ile dene
+    if (!user) {
+      console.log('⚠️ Exact match not found, trying regex search...');
+      user = await User.findOne({
+        email: { $regex: new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+      });
+    }
 
     if (!user) {
+      console.log('❌ User not found in database for email:', cleanEmail);
       return res.status(404).json({ message: 'User not found' });
     }
+
+    console.log('✅ User found:', user.email);
 
     // Verify security answer
     const isAnswerCorrect = await user.compareSecurityAnswer(securityAnswer);
 
     if (!isAnswerCorrect) {
+      console.log('❌ Security answer incorrect for user:', user.email);
       return res.status(401).json({ message: 'Security answer is incorrect' });
     }
+
+    console.log('✅ Security answer verified for:', user.email);
 
     // Update password
     user.password = newPassword;
     await user.save();
 
+    console.log('✅ Password updated successfully for:', user.email);
     res.json({ message: 'Your password has been updated successfully' });
   } catch (error) {
+    console.error('❌ resetPasswordWithAnswer error:', error.message);
     res.status(500).json({ message: error.message });
   }
 };

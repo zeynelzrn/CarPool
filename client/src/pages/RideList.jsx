@@ -128,7 +128,7 @@ const RideList = () => {
               
               {/* From */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
                   <LocationIcon className="w-4 h-4 text-[#004225]" /> From
                 </label>
                 <input
@@ -143,7 +143,7 @@ const RideList = () => {
 
               {/* To */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
                   <LocationIcon className="w-4 h-4 text-[#004225]" /> To
                 </label>
                 <input
@@ -158,7 +158,7 @@ const RideList = () => {
 
               {/* Date */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
                   <CalendarIcon className="w-4 h-4 text-[#004225]" /> Date
                 </label>
                 <input
@@ -172,7 +172,7 @@ const RideList = () => {
 
               {/* Max Price */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
                   <MoneyIcon className="w-4 h-4 text-[#004225]" /> Max Price
                 </label>
                 <input
