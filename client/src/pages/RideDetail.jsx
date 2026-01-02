@@ -204,15 +204,20 @@ const RideDetail = () => {
   const handleBooking = async () => {
     try {
       setBookingLoading(true);
-      await bookingService.createBooking(id);
-      setMessage({ type: 'success', text: 'Your booking request has been sent!' });
+      const response = await bookingService.createBooking(id);
 
-      // Yolcuya "Bekliyor" bildirimi göster
-      addNotification({
-        type: 'info',
-        message: 'Your booking request has been sent! Waiting for driver approval.',
-        link: '/my-bookings'
-      });
+      // Ekranda inline mesaj göster
+      setMessage({ type: 'success', text: 'Request sent! Waiting for driver approval.' });
+
+      // Yolcuya toast/popup bildirimi göster (success tipi - yeşil renk)
+      if (addNotification) {
+        addNotification({
+          type: 'success',
+          message: 'Request Sent! Waiting for driver approval.',
+          link: '/my-bookings'
+        });
+        console.log('✅ Yolcu bildirimi tetiklendi');
+      }
 
       fetchRideDetail();
       checkBooking();

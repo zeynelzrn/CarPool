@@ -47,13 +47,12 @@ const createBooking = async (req, res) => {
       passenger: populatedBooking.passenger.username
     });
 
-    // Room bazlı gönderim - Sadece new-booking-request eventi (duplicate önlemek için notification eventi kaldırıldı)
+    // SADECE hedef kullanıcıya gönder - Room bazlı emit KALDIRILDI (çift bildirim önleme)
     io.to(`user_${driverIdStr}`).emit('new-booking-request', {
       booking: populatedBooking,
       message: `${populatedBooking.passenger.username} sent you a booking request`
     });
-    io.to(`ride_${rideId.toString()}`).emit('booking-updated', populatedBooking);
-    console.log('✅ Rezervasyon bildirimi gönderildi:', `user_${driverIdStr}`);
+    console.log('✅ Rezervasyon bildirimi gönderildi (sadece sürücüye):', `user_${driverIdStr}`);
 
     res.status(201).json(populatedBooking);
   } catch (error) {
@@ -178,13 +177,12 @@ const updateBookingStatus = async (req, res) => {
       status: status
     });
 
-    // Room bazlı gönderim - Sadece booking-status-updated eventi (duplicate önlemek için notification eventi kaldırıldı)
+    // SADECE hedef kullanıcıya gönder - Room bazlı emit KALDIRILDI (çift bildirim önleme)
     io.to(`user_${passengerIdStr}`).emit('booking-status-updated', {
       booking: updatedBooking,
       message: message
     });
-    io.to(`ride_${booking.ride._id.toString()}`).emit('booking-updated', updatedBooking);
-    console.log('✅ Durum bildirimi gönderildi:', `user_${passengerIdStr}`);
+    console.log('✅ Durum bildirimi gönderildi (sadece yolcuya):', `user_${passengerIdStr}`);
 
     res.json(updatedBooking);
   } catch (error) {

@@ -22,20 +22,40 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const socketRef = useRef(null);
-  const recentNotificationsRef = useRef(new Set()); // Duplicate kontrolü için
+  const processedNotificationsRef = useRef(new Map()); // ID + Message bazlı duplicate kontrolü
 
-  // === DEDUPLICATION HELPER ===
-  const isDuplicateNotification = (message, type) => {
-    const key = `${type}:${message}`;
-    if (recentNotificationsRef.current.has(key)) {
-      console.log('Duplicate bildirim engellendi:', key);
+  // === GÜÇLENDİRİLMİŞ DEDUPLICATION HELPER ===
+  const isDuplicateNotification = (message, type, bookingId = null) => {
+    // Birden fazla key oluştur: message bazlı + booking ID bazlı
+    const messageKey = `${type}:${message}`;
+    const bookingKey = bookingId ? `booking:${bookingId}:${type}` : null;
+    const now = Date.now();
+
+    // Eski kayıtları temizle (5 saniyeden eski)
+    for (const [key, timestamp] of processedNotificationsRef.current.entries()) {
+      if (now - timestamp > 5000) {
+        processedNotificationsRef.current.delete(key);
+      }
+    }
+
+    // Message bazlı kontrol
+    if (processedNotificationsRef.current.has(messageKey)) {
+      console.log('🚫 Duplicate bildirim engellendi (message):', messageKey);
       return true;
     }
-    recentNotificationsRef.current.add(key);
-    // 3 saniye sonra key'i temizle
-    setTimeout(() => {
-      recentNotificationsRef.current.delete(key);
-    }, 3000);
+
+    // Booking ID bazlı kontrol
+    if (bookingKey && processedNotificationsRef.current.has(bookingKey)) {
+      console.log('🚫 Duplicate bildirim engellendi (bookingId):', bookingKey);
+      return true;
+    }
+
+    // Yeni bildirimi kaydet
+    processedNotificationsRef.current.set(messageKey, now);
+    if (bookingKey) {
+      processedNotificationsRef.current.set(bookingKey, now);
+    }
+
     return false;
   };
 
@@ -89,11 +109,12 @@ export const SocketProvider = ({ children }) => {
       };
 
       const handleNewBookingRequest = (data) => {
-        console.log('Yeni rezervasyon isteği:', data);
+        console.log('📥 Yeni rezervasyon isteği:', data);
         const message = data.message;
+        const bookingId = data.booking?._id;
 
-        // Deduplication kontrolü
-        if (isDuplicateNotification(message, 'booking-request')) {
+        // GÜÇLENDİRİLMİŞ Deduplication kontrolü (message + booking ID)
+        if (isDuplicateNotification(message, 'booking-request', bookingId)) {
           return;
         }
 
@@ -107,11 +128,12 @@ export const SocketProvider = ({ children }) => {
       };
 
       const handleBookingStatusUpdated = (data) => {
-        console.log('Rezervasyon durumu güncellendi:', data);
+        console.log('📥 Rezervasyon durumu güncellendi:', data);
         const message = data.message;
+        const bookingId = data.booking?._id;
 
-        // Deduplication kontrolü
-        if (isDuplicateNotification(message, 'booking-status')) {
+        // GÜÇLENDİRİLMİŞ Deduplication kontrolü (message + booking ID)
+        if (isDuplicateNotification(message, 'booking-status', bookingId)) {
           return;
         }
 
