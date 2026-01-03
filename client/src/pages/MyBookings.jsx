@@ -52,17 +52,17 @@ const MyBookings = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#004225] flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#004225]"></div>
-          <p className="text-gray-500 mt-4 font-medium">Loading your bookings...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-emerald-300 border-t-white"></div>
+          <p className="text-emerald-100 mt-4 font-medium">Loading your bookings...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans selection:bg-[#004225] selection:text-white flex flex-col pt-16">
+    <div className="min-h-screen bg-[#004225] font-sans selection:bg-emerald-300 selection:text-[#004225] flex flex-col pt-32">
 
       {/* --- 1. ÜST HERO ALANI --- */}
       <div className="relative h-80 w-full bg-[#004225] overflow-hidden">
