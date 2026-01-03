@@ -62,7 +62,7 @@ const MyBookings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#004225] font-sans selection:bg-emerald-300 selection:text-[#004225] flex flex-col pt-32">
+    <div className="min-h-screen bg-gray-50 font-sans selection:bg-emerald-300 selection:text-[#004225] flex flex-col pt-32">
 
       {/* --- 1. ÜST HERO ALANI --- */}
       <div className="relative h-80 w-full bg-[#004225] overflow-hidden">
