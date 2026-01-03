@@ -178,7 +178,15 @@ CarPool/
 
 ## Screenshots
 
-> Coming soon...
+### Homepage
+The landing page showcasing the platform's main features and call-to-action for users to find or offer rides.
+
+![Homepage](assets/homepage.png)
+
+### Available Rides
+Browse and filter available rides with detailed information including route, price, driver ratings, and available seats.
+
+![Available Rides](assets/rides.png)
 
 ---
 
