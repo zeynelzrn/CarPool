@@ -62,37 +62,34 @@ const MyBookings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans selection:bg-emerald-300 selection:text-[#004225] flex flex-col pt-32">
+    <div className="min-h-screen bg-[#004225] font-sans selection:bg-emerald-300 selection:text-[#004225]">
 
-      {/* --- 1. ÜST HERO ALANI --- */}
-      <div className="relative h-80 w-full bg-[#004225] overflow-hidden">
+      {/* --- 1. BAŞLIK ALANI (Yeşil Zemin Üzerinde) --- */}
+      <div className="pt-32 pb-12 px-6 text-center relative overflow-hidden">
         {/* Dekoratif Efektler */}
-        <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
         <div className="absolute bottom-0 left-20 w-64 h-64 bg-white/5 rounded-full blur-2xl"></div>
 
-        {/* Başlık ve Buton Alanı */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pb-16 text-center px-4">
-            <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md mb-2 flex items-center gap-3">
-               <TicketIcon className="w-10 h-10 text-emerald-300" />
-               My Bookings
-            </h1>
-            <p className="text-emerald-100 text-lg font-medium opacity-90 mb-6">
-                All your planned trips are here.
-            </p>
-            
-            <Link
-                to="/rides"
-                className="bg-white text-[#004225] px-8 py-3 rounded-xl hover:bg-emerald-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-bold flex items-center gap-2"
-            >
-                <SearchIcon className="w-5 h-5" />
-                Find New Ride
-            </Link>
-        </div>
+        <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md mb-2 flex items-center justify-center gap-3 relative z-10">
+          <TicketIcon className="w-10 h-10 text-emerald-300" />
+          My Bookings
+        </h1>
+        <p className="text-emerald-100 text-lg font-medium opacity-90 mb-6 relative z-10">
+          All your planned trips are here.
+        </p>
+
+        <Link
+          to="/rides"
+          className="inline-flex items-center gap-2 bg-white text-[#004225] px-8 py-3 rounded-xl hover:bg-emerald-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 font-bold relative z-10"
+        >
+          <SearchIcon className="w-5 h-5" />
+          Find New Ride
+        </Link>
       </div>
 
-      {/* --- 2. ANA İÇERİK (Yüzen Liste) --- */}
-      <div className="container mx-auto px-4 relative z-20 -mt-24 pb-12 max-w-4xl">
+      {/* --- 2. İÇERİK KAPSAYICISI (Beyaz Alan) --- */}
+      <div className="bg-gray-50 w-full min-h-screen rounded-t-3xl px-4 py-8">
+        <div className="container mx-auto max-w-4xl">
         
         {bookings.length === 0 ? (
           <div className="bg-white p-12 rounded-3xl shadow-xl text-center border border-gray-100">
@@ -244,6 +241,7 @@ const MyBookings = () => {
             })}
           </div>
         )}
+        </div>
       </div>
 
       {ratingModal.isOpen && (

@@ -196,15 +196,15 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Team Members
 
-- **Zeynel Zeren** - Full Stack Developer
-- **Melisa Demirbas** - Developer
-- **Esra Ece Gunguney** - Developer
+- **Zeynel Zeren** 
+- **Melisa Demirbas** 
+- **Esra Ece Gunguney** 
 
 ---
 
 ## License
 
-This project was developed as a final project for **Web Programming (SE 3355)** course at Bahcesehir University.
+This project was developed as a final project for **Web Programming (SE 3355)** course at Yasar University.
 
 ---
 
