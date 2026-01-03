@@ -62,10 +62,10 @@ const MyBookings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#004225] font-sans selection:bg-emerald-300 selection:text-[#004225]">
+    <div className="min-h-screen w-full bg-[#004225] pt-32 font-sans selection:bg-emerald-300 selection:text-[#004225]">
 
-      {/* --- 1. BAŞLIK ALANI (Yeşil Zemin Üzerinde) --- */}
-      <div className="pt-32 pb-12 px-6 text-center relative overflow-hidden">
+      {/* --- 1. BAŞLIK ALANI --- */}
+      <div className="pb-12 px-6 text-center relative overflow-hidden">
         {/* Dekoratif Efektler */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
         <div className="absolute bottom-0 left-20 w-64 h-64 bg-white/5 rounded-full blur-2xl"></div>
@@ -87,9 +87,8 @@ const MyBookings = () => {
         </Link>
       </div>
 
-      {/* --- 2. İÇERİK KAPSAYICISI (Beyaz Alan) --- */}
-      <div className="bg-gray-50 w-full min-h-screen rounded-t-3xl px-4 py-8">
-        <div className="container mx-auto max-w-4xl">
+      {/* --- 2. İÇERİK ALANI --- */}
+      <div className="container mx-auto px-4 pb-12 max-w-4xl">
         
         {bookings.length === 0 ? (
           <div className="bg-white p-12 rounded-3xl shadow-xl text-center border border-gray-100">
@@ -241,7 +240,6 @@ const MyBookings = () => {
             })}
           </div>
         )}
-        </div>
       </div>
 
       {ratingModal.isOpen && (
